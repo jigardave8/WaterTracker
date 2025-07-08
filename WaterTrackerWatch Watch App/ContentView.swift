@@ -6,50 +6,70 @@
 //
 
 // WaterTrackerWatch/ContentView.swift
+// Target: WaterTrackerWatch
 
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject private var healthManager = HealthKitManager()
-    // Read the goal from AppStorage, which syncs from the phone
-    @AppStorage("dailyGoal") private var dailyGoal: Double = 2500
+    @EnvironmentObject var healthManager: HealthKitManager
+    @AppStorage("dailyGoal", store: UserDefaults(suiteName: SharedDataManager.appGroupID)) var dailyGoal: Double = 2500
 
     var progress: Double {
         dailyGoal > 0 ? healthManager.totalWaterToday / dailyGoal : 0
     }
+    
+    // Default log amount for the watch
+    private let defaultLogAmount: Double = 250
 
     var body: some View {
-        VStack(spacing: 8) {
-            ZStack {
-                ProgressCircleView(progress: progress)
-                    .frame(width: 80, height: 80)
-                
-                VStack(spacing: 0) {
-                    Text("\(Int(progress * 100))%")
-                        .font(.system(.headline, design: .rounded))
-                        .bold()
-                    Text("\(Int(healthManager.totalWaterToday)) ml")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-            }
-            
+        VStack {
+            // Progress Header
             HStack {
-                Button(action: { healthManager.saveWaterIntake(amount: 250) }) {
-                    Text("+250ml")
+                ProgressCircleView(progress: progress)
+                    .frame(width: 50, height: 50)
+                
+                VStack(alignment: .leading) {
+                    Text("\(Int(healthManager.totalWaterToday)) ml")
+                        .font(.headline).bold()
+                    Text("of \(Int(dailyGoal)) ml")
+                        .font(.caption).foregroundColor(.secondary)
                 }
-                .tint(.blue)
             }
+            .padding(.bottom, 4)
+
+            Divider()
+
+            // --- NEW: List of drinks for logging ---
+            List(Drink.allDrinks) { drink in
+                Button(action: {
+                    // Log the selected drink with the default amount
+                    healthManager.saveWaterIntake(drink: drink, amountInML: defaultLogAmount)
+                }) {
+                    HStack {
+                        Image(systemName: drink.imageName)
+                            .foregroundColor(drink.color)
+                        Text(drink.name)
+                        Spacer()
+                        Text("+\(Int(defaultLogAmount))")
+                            .foregroundColor(.secondary)
+                    }
+                }
+            }
+            .listStyle(.carousel) // A great list style for watchOS
         }
-        .padding()
+        .padding(.top, 1) // Reduce top padding
+        .navigationTitle("Water Tracker")
+        .navigationBarTitleDisplayMode(.inline)
         .onAppear {
-            healthManager.fetchTodayWaterIntake()
+            healthManager.fetchAllTodayData()
         }
     }
 }
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView()
+        NavigationView {
+            ContentView().environmentObject(HealthKitManager())
+        }
     }
 }

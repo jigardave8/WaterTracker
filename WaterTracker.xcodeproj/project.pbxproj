@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		E1418EB12E1D3ECE00330701 /* WaterTrackerWatch Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = E1418EA72E1D3EA100330701 /* WaterTrackerWatch Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		E144194A2E1DA2E700D1BCF0 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E14419492E1DA2E700D1BCF0 /* WidgetKit.framework */; };
+		E144194C2E1DA2E700D1BCF0 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E144194B2E1DA2E700D1BCF0 /* SwiftUI.framework */; };
+		E14419582E1DA2ED00D1BCF0 /* WaterWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = E14419472E1DA2E700D1BCF0 /* WaterWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -17,6 +20,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = E1418EA62E1D3EA100330701;
 			remoteInfo = "WaterTrackerWatch Watch App";
+		};
+		E14419562E1DA2ED00D1BCF0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E1418E8C2E1D3E1100330701 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E14419462E1DA2E700D1BCF0;
+			remoteInfo = WaterWidgetExtension;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -32,22 +42,53 @@
 			name = "Embed Watch Content";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E144195D2E1DA2ED00D1BCF0 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				E14419582E1DA2ED00D1BCF0 /* WaterWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		E1418E942E1D3E1100330701 /* WaterTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WaterTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E1418EA72E1D3EA100330701 /* WaterTrackerWatch Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "WaterTrackerWatch Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		E14419472E1DA2E700D1BCF0 /* WaterWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WaterWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		E14419492E1DA2E700D1BCF0 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = /System/Library/Frameworks/WidgetKit.framework; sourceTree = "<absolute>"; };
+		E144194B2E1DA2E700D1BCF0 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = /System/Library/Frameworks/SwiftUI.framework; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
 		E1418EBB2E1D3FEB00330701 /* Exceptions for "WaterTracker" folder in "WaterTrackerWatch Watch App" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				DailyIntake.swift,
 				Drink.swift,
 				HealthKitManager.swift,
 				ProgressCircleView.swift,
+				SharedDataManager.swift,
 			);
 			target = E1418EA62E1D3EA100330701 /* WaterTrackerWatch Watch App */;
+		};
+		E14419592E1DA2ED00D1BCF0 /* Exceptions for "WaterWidget" folder in "WaterWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = E14419462E1DA2E700D1BCF0 /* WaterWidgetExtension */;
+		};
+		E14419632E1DA36600D1BCF0 /* Exceptions for "WaterTracker" folder in "WaterWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				ProgressCircleView.swift,
+				SharedDataManager.swift,
+			);
+			target = E14419462E1DA2E700D1BCF0 /* WaterWidgetExtension */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -56,6 +97,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				E1418EBB2E1D3FEB00330701 /* Exceptions for "WaterTracker" folder in "WaterTrackerWatch Watch App" target */,
+				E14419632E1DA36600D1BCF0 /* Exceptions for "WaterTracker" folder in "WaterWidgetExtension" target */,
 			);
 			path = WaterTracker;
 			sourceTree = "<group>";
@@ -63,6 +105,14 @@
 		E1418EA82E1D3EA100330701 /* WaterTrackerWatch Watch App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = "WaterTrackerWatch Watch App";
+			sourceTree = "<group>";
+		};
+		E144194D2E1DA2E700D1BCF0 /* WaterWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				E14419592E1DA2ED00D1BCF0 /* Exceptions for "WaterWidget" folder in "WaterWidgetExtension" target */,
+			);
+			path = WaterWidget;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -82,6 +132,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E14419442E1DA2E700D1BCF0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E144194C2E1DA2E700D1BCF0 /* SwiftUI.framework in Frameworks */,
+				E144194A2E1DA2E700D1BCF0 /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -90,6 +149,8 @@
 			children = (
 				E1418E962E1D3E1100330701 /* WaterTracker */,
 				E1418EA82E1D3EA100330701 /* WaterTrackerWatch Watch App */,
+				E144194D2E1DA2E700D1BCF0 /* WaterWidget */,
+				E14419482E1DA2E700D1BCF0 /* Frameworks */,
 				E1418E952E1D3E1100330701 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -99,8 +160,18 @@
 			children = (
 				E1418E942E1D3E1100330701 /* WaterTracker.app */,
 				E1418EA72E1D3EA100330701 /* WaterTrackerWatch Watch App.app */,
+				E14419472E1DA2E700D1BCF0 /* WaterWidgetExtension.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		E14419482E1DA2E700D1BCF0 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				E14419492E1DA2E700D1BCF0 /* WidgetKit.framework */,
+				E144194B2E1DA2E700D1BCF0 /* SwiftUI.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -114,11 +185,13 @@
 				E1418E912E1D3E1100330701 /* Frameworks */,
 				E1418E922E1D3E1100330701 /* Resources */,
 				E1418EB52E1D3ECE00330701 /* Embed Watch Content */,
+				E144195D2E1DA2ED00D1BCF0 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				E1418EB02E1D3ECE00330701 /* PBXTargetDependency */,
+				E14419572E1DA2ED00D1BCF0 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				E1418E962E1D3E1100330701 /* WaterTracker */,
@@ -152,6 +225,28 @@
 			productReference = E1418EA72E1D3EA100330701 /* WaterTrackerWatch Watch App.app */;
 			productType = "com.apple.product-type.application";
 		};
+		E14419462E1DA2E700D1BCF0 /* WaterWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E144195A2E1DA2ED00D1BCF0 /* Build configuration list for PBXNativeTarget "WaterWidgetExtension" */;
+			buildPhases = (
+				E14419432E1DA2E700D1BCF0 /* Sources */,
+				E14419442E1DA2E700D1BCF0 /* Frameworks */,
+				E14419452E1DA2E700D1BCF0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				E144194D2E1DA2E700D1BCF0 /* WaterWidget */,
+			);
+			name = WaterWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = WaterWidgetExtension;
+			productReference = E14419472E1DA2E700D1BCF0 /* WaterWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -166,6 +261,9 @@
 						CreatedOnToolsVersion = 16.4;
 					};
 					E1418EA62E1D3EA100330701 = {
+						CreatedOnToolsVersion = 16.4;
+					};
+					E14419462E1DA2E700D1BCF0 = {
 						CreatedOnToolsVersion = 16.4;
 					};
 				};
@@ -186,6 +284,7 @@
 			targets = (
 				E1418E932E1D3E1100330701 /* WaterTracker */,
 				E1418EA62E1D3EA100330701 /* WaterTrackerWatch Watch App */,
+				E14419462E1DA2E700D1BCF0 /* WaterWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -199,6 +298,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		E1418EA52E1D3EA100330701 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E14419452E1DA2E700D1BCF0 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -222,6 +328,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E14419432E1DA2E700D1BCF0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -229,6 +342,11 @@
 			isa = PBXTargetDependency;
 			target = E1418EA62E1D3EA100330701 /* WaterTrackerWatch Watch App */;
 			targetProxy = E1418EAF2E1D3ECE00330701 /* PBXContainerItemProxy */;
+		};
+		E14419572E1DA2ED00D1BCF0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E14419462E1DA2E700D1BCF0 /* WaterWidgetExtension */;
+			targetProxy = E14419562E1DA2ED00D1BCF0 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -498,6 +616,86 @@
 			};
 			name = Release;
 		};
+		E144195B2E1DA2ED00D1BCF0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = WaterWidget/WaterWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3G46N5JLN2;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = WaterWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = WaterWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = bitdegree.WaterTracker.WaterWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = auto;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2,7";
+				XROS_DEPLOYMENT_TARGET = 2.5;
+			};
+			name = Debug;
+		};
+		E144195C2E1DA2ED00D1BCF0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = WaterWidget/WaterWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3G46N5JLN2;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = WaterWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = WaterWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = bitdegree.WaterTracker.WaterWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = auto;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2,7";
+				XROS_DEPLOYMENT_TARGET = 2.5;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -524,6 +722,15 @@
 			buildConfigurations = (
 				E1418EB32E1D3ECE00330701 /* Debug */,
 				E1418EB42E1D3ECE00330701 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E144195A2E1DA2ED00D1BCF0 /* Build configuration list for PBXNativeTarget "WaterWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E144195B2E1DA2ED00D1BCF0 /* Debug */,
+				E144195C2E1DA2ED00D1BCF0 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

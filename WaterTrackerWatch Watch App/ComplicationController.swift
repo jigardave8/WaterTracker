@@ -42,17 +42,20 @@ class ComplicationController: NSObject, CLKComplicationDataSource {
     // MARK: - Templating
     
     // This is the main helper function that builds the complication.
+
+    // This is the NEW, CORRECT version
     func createTimelineEntry(for complication: CLKComplication, date: Date, completion: @escaping (CLKComplicationTimelineEntry?) -> Void) {
-        // Read the user's goal from the synced @AppStorage.
         let goal = UserDefaults.standard.double(forKey: "dailyGoal")
 
-        // Fetch the current total water intake.
-        healthManager.fetchCurrentWaterTotal { progress in
-            // Build the appropriate template based on the complication family.
+        // --- FIX: Use the new function name and get the value from the manager ---
+        healthManager.fetchTodayWaterIntake {
+            // The total is now on the healthManager's published property
+            let progress = self.healthManager.totalWaterToday
+            
+            // The rest of the logic is the same
             let template = self.createTemplate(for: complication.family, progress: progress, goal: goal)
             
             if let template = template {
-                // Create the final timeline entry.
                 let entry = CLKComplicationTimelineEntry(date: date, complicationTemplate: template)
                 completion(entry)
             } else {
@@ -93,4 +96,6 @@ class ComplicationController: NSObject, CLKComplicationDataSource {
             return nil
         }
     }
+    
+    
 }

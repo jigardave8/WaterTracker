@@ -5,16 +5,18 @@
 //  Created by BitDegree on 08/07/25.
 //
 
-// HistoryView.swift (New File, iOS Target)
+// HistoryView.swift
+// Target: WaterTracker
 
 import SwiftUI
+import HealthKit // <-- ADD THIS LINE
+
 
 struct HistoryView: View {
     @ObservedObject var healthManager: HealthKitManager
     
     private var dateFormatter: DateFormatter {
         let formatter = DateFormatter()
-        formatter.dateStyle = .none
         formatter.timeStyle = .short
         return formatter
     }
@@ -22,19 +24,7 @@ struct HistoryView: View {
     var body: some View {
         List {
             ForEach(healthManager.history, id: \.uuid) { sample in
-                HStack {
-                    Image(systemName: "drop.fill")
-                        .foregroundColor(.blue)
-                    
-                    let amount = sample.quantity.doubleValue(for: .literUnit(with: .milli))
-                    Text("\(Int(amount)) ml")
-                    
-                    Spacer()
-                    
-                    Text(dateFormatter.string(from: sample.startDate))
-                        .foregroundColor(.secondary)
-                }
-                .font(.body)
+                historyRow(for: sample)
             }
             .onDelete(perform: deleteEntry)
         }
@@ -44,18 +34,46 @@ struct HistoryView: View {
         }
     }
     
+    // --- NEW: A dedicated function to build the row ---
+    @ViewBuilder
+    private func historyRow(for sample: HKQuantitySample) -> some View {
+        let hydratedAmount = sample.quantity.doubleValue(for: .literUnit(with: .milli))
+        
+        // Read metadata
+        let drinkName = sample.metadata?[HealthKitManager.MetadataKeys.drinkName] as? String ?? "Water"
+        let originalVolume = sample.metadata?[HealthKitManager.MetadataKeys.originalVolume] as? Double
+        
+        HStack {
+            Image(systemName: "drop.fill")
+                .foregroundColor(.blue)
+                .font(.title2)
+
+            VStack(alignment: .leading) {
+                if let originalVolume = originalVolume, drinkName != "Water" {
+                    // Display both original and hydrated amounts for custom drinks
+                    Text("\(Int(originalVolume))ml \(drinkName)")
+                        .fontWeight(.bold)
+                    Text("(\(Int(hydratedAmount))ml Hydration)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                } else {
+                    // Just show the amount for plain water
+                    Text("\(Int(hydratedAmount))ml Water")
+                        .fontWeight(.bold)
+                }
+            }
+            
+            Spacer()
+            
+            Text(dateFormatter.string(from: sample.startDate))
+                .foregroundColor(.secondary)
+        }
+        .padding(.vertical, 8)
+    }
+    
     private func deleteEntry(at offsets: IndexSet) {
         for index in offsets {
-            let sampleToDelete = healthManager.history[index]
-            healthManager.deleteSample(sampleToDelete)
-        }
-    }
-}
-
-struct HistoryView_Previews: PreviewProvider {
-    static var previews: some View {
-        NavigationView {
-            HistoryView(healthManager: HealthKitManager())
+            healthManager.deleteSample(healthManager.history[index])
         }
     }
 }
