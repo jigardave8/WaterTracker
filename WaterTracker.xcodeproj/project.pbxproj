@@ -6,20 +6,76 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		E1418EB12E1D3ECE00330701 /* WaterTrackerWatch Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = E1418EA72E1D3EA100330701 /* WaterTrackerWatch Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		E1418EAF2E1D3ECE00330701 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E1418E8C2E1D3E1100330701 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E1418EA62E1D3EA100330701;
+			remoteInfo = "WaterTrackerWatch Watch App";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		E1418EB52E1D3ECE00330701 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				E1418EB12E1D3ECE00330701 /* WaterTrackerWatch Watch App.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		E1418E942E1D3E1100330701 /* WaterTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WaterTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E1418EA72E1D3EA100330701 /* WaterTrackerWatch Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "WaterTrackerWatch Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		E1418EBB2E1D3FEB00330701 /* Exceptions for "WaterTracker" folder in "WaterTrackerWatch Watch App" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Drink.swift,
+				HealthKitManager.swift,
+				ProgressCircleView.swift,
+			);
+			target = E1418EA62E1D3EA100330701 /* WaterTrackerWatch Watch App */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		E1418E962E1D3E1100330701 /* WaterTracker */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				E1418EBB2E1D3FEB00330701 /* Exceptions for "WaterTracker" folder in "WaterTrackerWatch Watch App" target */,
+			);
 			path = WaterTracker;
+			sourceTree = "<group>";
+		};
+		E1418EA82E1D3EA100330701 /* WaterTrackerWatch Watch App */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "WaterTrackerWatch Watch App";
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		E1418E912E1D3E1100330701 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E1418EA42E1D3EA100330701 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -33,6 +89,7 @@
 			isa = PBXGroup;
 			children = (
 				E1418E962E1D3E1100330701 /* WaterTracker */,
+				E1418EA82E1D3EA100330701 /* WaterTrackerWatch Watch App */,
 				E1418E952E1D3E1100330701 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,6 +98,7 @@
 			isa = PBXGroup;
 			children = (
 				E1418E942E1D3E1100330701 /* WaterTracker.app */,
+				E1418EA72E1D3EA100330701 /* WaterTrackerWatch Watch App.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -55,10 +113,12 @@
 				E1418E902E1D3E1100330701 /* Sources */,
 				E1418E912E1D3E1100330701 /* Frameworks */,
 				E1418E922E1D3E1100330701 /* Resources */,
+				E1418EB52E1D3ECE00330701 /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				E1418EB02E1D3ECE00330701 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				E1418E962E1D3E1100330701 /* WaterTracker */,
@@ -68,6 +128,28 @@
 			);
 			productName = WaterTracker;
 			productReference = E1418E942E1D3E1100330701 /* WaterTracker.app */;
+			productType = "com.apple.product-type.application";
+		};
+		E1418EA62E1D3EA100330701 /* WaterTrackerWatch Watch App */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E1418EB22E1D3ECE00330701 /* Build configuration list for PBXNativeTarget "WaterTrackerWatch Watch App" */;
+			buildPhases = (
+				E1418EA32E1D3EA100330701 /* Sources */,
+				E1418EA42E1D3EA100330701 /* Frameworks */,
+				E1418EA52E1D3EA100330701 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				E1418EA82E1D3EA100330701 /* WaterTrackerWatch Watch App */,
+			);
+			name = "WaterTrackerWatch Watch App";
+			packageProductDependencies = (
+			);
+			productName = "WaterTrackerWatch Watch App";
+			productReference = E1418EA72E1D3EA100330701 /* WaterTrackerWatch Watch App.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -81,6 +163,9 @@
 				LastUpgradeCheck = 1640;
 				TargetAttributes = {
 					E1418E932E1D3E1100330701 = {
+						CreatedOnToolsVersion = 16.4;
+					};
+					E1418EA62E1D3EA100330701 = {
 						CreatedOnToolsVersion = 16.4;
 					};
 				};
@@ -100,12 +185,20 @@
 			projectRoot = "";
 			targets = (
 				E1418E932E1D3E1100330701 /* WaterTracker */,
+				E1418EA62E1D3EA100330701 /* WaterTrackerWatch Watch App */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		E1418E922E1D3E1100330701 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E1418EA52E1D3EA100330701 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -122,7 +215,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E1418EA32E1D3EA100330701 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		E1418EB02E1D3ECE00330701 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E1418EA62E1D3EA100330701 /* WaterTrackerWatch Watch App */;
+			targetProxy = E1418EAF2E1D3ECE00330701 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		E1418E9E2E1D3E1600330701 /* Debug */ = {
@@ -253,6 +361,8 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "We need to read your health data to track your daily water intake and sync across your devices";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "We need to update your health data to save your water intake.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -263,7 +373,7 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.4;
@@ -272,10 +382,11 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
+				TARGETED_DEVICE_FAMILY = "1,2";
 				XROS_DEPLOYMENT_TARGET = 2.5;
 			};
 			name = Debug;
@@ -292,6 +403,8 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "We need to read your health data to track your daily water intake and sync across your devices";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "We need to update your health data to save your water intake.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -302,7 +415,7 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.4;
@@ -311,11 +424,77 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
+				TARGETED_DEVICE_FAMILY = "1,2";
 				XROS_DEPLOYMENT_TARGET = 2.5;
+			};
+			name = Release;
+		};
+		E1418EB32E1D3ECE00330701 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "WaterTrackerWatch Watch App/WaterTrackerWatch Watch App.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3G46N5JLN2;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = WaterTrackerWatch;
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "We need to read your health data to track your daily water intake and sync across your devices.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "We need to update your health data to save your water intake";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = bitdegree.WaterTracker;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = bitdegree.WaterTracker.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 9.6;
+			};
+			name = Debug;
+		};
+		E1418EB42E1D3ECE00330701 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "WaterTrackerWatch Watch App/WaterTrackerWatch Watch App.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3G46N5JLN2;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = WaterTrackerWatch;
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "We need to read your health data to track your daily water intake and sync across your devices.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "We need to update your health data to save your water intake";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = bitdegree.WaterTracker;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = bitdegree.WaterTracker.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				VALIDATE_PRODUCT = YES;
+				WATCHOS_DEPLOYMENT_TARGET = 9.6;
 			};
 			name = Release;
 		};
@@ -336,6 +515,15 @@
 			buildConfigurations = (
 				E1418EA12E1D3E1600330701 /* Debug */,
 				E1418EA22E1D3E1600330701 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E1418EB22E1D3ECE00330701 /* Build configuration list for PBXNativeTarget "WaterTrackerWatch Watch App" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E1418EB32E1D3ECE00330701 /* Debug */,
+				E1418EB42E1D3ECE00330701 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
