@@ -4,14 +4,21 @@
 //
 //  Created by BitDegree on 08/07/25.
 //
-// IntakeSelectionView.swift
-// Target: WaterTracker
+//
+//  IntakeSelectionView.swift
+//  WaterTracker
+//
 
 import SwiftUI
 
 struct IntakeSelectionView: View {
     let drink: Drink
-    @ObservedObject var healthManager: HealthKitManager
+    
+    // --- THE FIX IS HERE ---
+    // Changed from @ObservedObject to @EnvironmentObject.
+    // This view will now get the healthManager from the environment automatically.
+    @EnvironmentObject var healthManager: HealthKitManager
+    
     @Environment(\.dismiss) var dismiss
 
     private let sizes: [Double] = [250, 330, 500, 750]
@@ -19,20 +26,25 @@ struct IntakeSelectionView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 20) {
-                // ... UI is the same ...
-                Text("Log \(drink.name)").font(.largeTitle).fontWeight(.bold)
-                Image(systemName: drink.imageName).font(.system(size: 80)).foregroundColor(drink.color)
-                Text("Hydration Factor: \(Int(drink.hydrationFactor * 100))%").font(.title3).foregroundColor(.secondary).padding(.bottom)
+                Text("Log \(drink.name)")
+                    .font(.largeTitle).fontWeight(.bold)
+                
+                Image(systemName: drink.imageName)
+                    .font(.system(size: 80)).foregroundColor(drink.color)
+
+                Text("Hydration Factor: \(Int(drink.hydrationFactor * 100))%")
+                    .font(.title3).foregroundColor(.secondary).padding(.bottom)
+                
                 Text("Select Size").font(.headline)
                 
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
                     ForEach(sizes, id: \.self) { size in
                         Button(action: {
-                            // --- MODIFIED: Call the new save function ---
                             healthManager.saveWaterIntake(drink: drink, amountInML: size)
                             dismiss()
                         }) {
-                            Text("\(Int(size)) ml").font(.title2).fontWeight(.semibold)
+                            Text("\(Int(size)) ml")
+                                .font(.title2).fontWeight(.semibold)
                                 .frame(maxWidth: .infinity, minHeight: 80)
                                 .background(drink.color.opacity(0.15))
                                 .cornerRadius(15).foregroundColor(.primary)

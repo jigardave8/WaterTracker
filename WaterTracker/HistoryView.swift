@@ -5,15 +5,20 @@
 //  Created by BitDegree on 08/07/25.
 //
 
-// HistoryView.swift
-// Target: WaterTracker
+//
+//  HistoryView.swift
+//  WaterTracker
+//
 
 import SwiftUI
-import HealthKit // <-- ADD THIS LINE
-
+import HealthKit
 
 struct HistoryView: View {
-    @ObservedObject var healthManager: HealthKitManager
+    // --- THE FIX IS HERE ---
+    // Changed from @ObservedObject to @EnvironmentObject.
+    @EnvironmentObject var healthManager: HealthKitManager
+    
+    @StateObject private var settingsManager = SettingsManager()
     
     private var dateFormatter: DateFormatter {
         let formatter = DateFormatter()
@@ -34,41 +39,30 @@ struct HistoryView: View {
         }
     }
     
-    // --- NEW: A dedicated function to build the row ---
     @ViewBuilder
     private func historyRow(for sample: HKQuantitySample) -> some View {
-        let hydratedAmount = sample.quantity.doubleValue(for: .literUnit(with: .milli))
+        let hydratedAmount = sample.quantity.doubleValue(for: settingsManager.volumeUnit.healthKitUnit)
         
-        // Read metadata
         let drinkName = sample.metadata?[HealthKitManager.MetadataKeys.drinkName] as? String ?? "Water"
-        let originalVolume = sample.metadata?[HealthKitManager.MetadataKeys.originalVolume] as? Double
+        let originalVolumeML = sample.metadata?[HealthKitManager.MetadataKeys.originalVolume] as? Double
         
         HStack {
-            Image(systemName: "drop.fill")
-                .foregroundColor(.blue)
-                .font(.title2)
-
+            Image(systemName: "drop.fill").foregroundColor(.blue).font(.title2)
             VStack(alignment: .leading) {
-                if let originalVolume = originalVolume, drinkName != "Water" {
-                    // Display both original and hydrated amounts for custom drinks
-                    Text("\(Int(originalVolume))ml \(drinkName)")
+                if let originalVolumeML = originalVolumeML, drinkName != "Water" {
+                    let originalVolume = HKQuantity(unit: .literUnit(with: .milli), doubleValue: originalVolumeML).doubleValue(for: settingsManager.volumeUnit.healthKitUnit)
+                    Text("\(Int(originalVolume)) \(settingsManager.volumeUnit.rawValue) \(drinkName)")
                         .fontWeight(.bold)
-                    Text("(\(Int(hydratedAmount))ml Hydration)")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    Text("(\(Int(hydratedAmount)) \(settingsManager.volumeUnit.rawValue) Hydration)")
+                        .font(.caption).foregroundColor(.secondary)
                 } else {
-                    // Just show the amount for plain water
-                    Text("\(Int(hydratedAmount))ml Water")
+                    Text("\(Int(hydratedAmount)) \(settingsManager.volumeUnit.rawValue) Water")
                         .fontWeight(.bold)
                 }
             }
-            
             Spacer()
-            
-            Text(dateFormatter.string(from: sample.startDate))
-                .foregroundColor(.secondary)
-        }
-        .padding(.vertical, 8)
+            Text(dateFormatter.string(from: sample.startDate)).foregroundColor(.secondary)
+        }.padding(.vertical, 8)
     }
     
     private func deleteEntry(at offsets: IndexSet) {

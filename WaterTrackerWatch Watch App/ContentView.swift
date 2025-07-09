@@ -5,71 +5,43 @@
 //  Created by BitDegree on 08/07/25.
 //
 
-// WaterTrackerWatch/ContentView.swift
-// Target: WaterTrackerWatch
-
+// watchOS ContentView.swift
 import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject var healthManager: HealthKitManager
+    @StateObject private var settingsManager = SettingsManager()
     @AppStorage("dailyGoal", store: UserDefaults(suiteName: SharedDataManager.appGroupID)) var dailyGoal: Double = 2500
 
     var progress: Double {
-        dailyGoal > 0 ? healthManager.totalWaterToday / dailyGoal : 0
+        let total = healthManager.totalWaterToday
+        return dailyGoal > 0 ? total / dailyGoal : 0
     }
-    
-    // Default log amount for the watch
-    private let defaultLogAmount: Double = 250
 
     var body: some View {
         VStack {
-            // Progress Header
             HStack {
-                ProgressCircleView(progress: progress)
-                    .frame(width: 50, height: 50)
-                
+                ProgressCircleView(progress: progress).frame(width: 50, height: 50)
                 VStack(alignment: .leading) {
-                    Text("\(Int(healthManager.totalWaterToday)) ml")
+                    Text("\(Int(healthManager.totalWaterToday)) \(settingsManager.volumeUnit.rawValue)")
                         .font(.headline).bold()
-                    Text("of \(Int(dailyGoal)) ml")
+                    Text("of \(Int(dailyGoal)) \(settingsManager.volumeUnit.rawValue)")
                         .font(.caption).foregroundColor(.secondary)
                 }
-            }
-            .padding(.bottom, 4)
-
+            }.padding(.bottom, 4)
             Divider()
-
-            // --- NEW: List of drinks for logging ---
             List(Drink.allDrinks) { drink in
-                Button(action: {
-                    // Log the selected drink with the default amount
-                    healthManager.saveWaterIntake(drink: drink, amountInML: defaultLogAmount)
-                }) {
+                NavigationLink(destination: AdjustIntakeView(drink: drink)) {
                     HStack {
-                        Image(systemName: drink.imageName)
-                            .foregroundColor(drink.color)
+                        Image(systemName: drink.imageName).foregroundColor(drink.color)
                         Text(drink.name)
-                        Spacer()
-                        Text("+\(Int(defaultLogAmount))")
-                            .foregroundColor(.secondary)
                     }
                 }
-            }
-            .listStyle(.carousel) // A great list style for watchOS
+            }.listStyle(.carousel)
         }
-        .padding(.top, 1) // Reduce top padding
+        .padding(.top, 1)
         .navigationTitle("Water Tracker")
         .navigationBarTitleDisplayMode(.inline)
-        .onAppear {
-            healthManager.fetchAllTodayData()
-        }
-    }
-}
-
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        NavigationView {
-            ContentView().environmentObject(HealthKitManager())
-        }
+        .onAppear { healthManager.fetchAllTodayData() }
     }
 }

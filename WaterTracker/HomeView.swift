@@ -5,63 +5,55 @@
 //  Created by BitDegree on 09/07/25.
 //
 
-// HomeView.swift (This contains the old ContentView logic)
+//
+//  HomeView.swift
+//  WaterTracker
+//
+//  This is the main "Today" screen for the iOS app.
+//
 
 import SwiftUI
+import HealthKit
 
 struct HomeView: View {
-    // We get the healthManager from the environment, which the TabView will provide.
     @EnvironmentObject var healthManager: HealthKitManager
+    @StateObject private var settingsManager = SettingsManager()
     
-    // All other properties from the old ContentView go here.
     @AppStorage("dailyGoal") private var dailyGoal: Double = 2500
-    @AppStorage("notificationsEnabled") private var notificationsEnabled: Bool = false {
-        didSet {
-            if notificationsEnabled {
-                NotificationManager.shared.scheduleWaterReminders()
-            } else {
-                NotificationManager.shared.cancelAllNotifications()
-            }
-        }
-    }
     
     @State private var showingSettings = false
     @State private var selectedDrink: Drink? = nil
 
     var progress: Double {
-        dailyGoal > 0 ? healthManager.totalWaterToday / dailyGoal : 0
+        let total = healthManager.totalWaterToday
+        // We use the raw dailyGoal value for calculation, as both are now in the same unit.
+        return dailyGoal > 0 ? total / dailyGoal : 0
     }
     
     var body: some View {
         NavigationView {
-            // The entire VStack from your old ContentView.swift's body goes here.
             VStack(spacing: 20) {
-                NavigationLink(destination: HistoryView(healthManager: healthManager)) {
+                // --- FIX 1: Remove the healthManager argument ---
+                NavigationLink(destination: HistoryView()) {
                     Text("View Today's History")
-                        .font(.headline)
-                }
-                .padding(.top)
+                }.padding(.top)
 
                 Text("Today's Progress")
-                    .font(.title2)
-                    .fontWeight(.medium)
+                    .font(.title2).fontWeight(.medium)
 
                 ZStack {
                     ProgressCircleView(progress: progress)
                         .frame(width: 200, height: 200)
-                    
                     VStack {
-                        Text("\(Int(healthManager.totalWaterToday)) ml")
+                        Text("\(Int(healthManager.totalWaterToday)) \(settingsManager.volumeUnit.rawValue)")
                             .font(.largeTitle).fontWeight(.bold)
-                        Text("of \(Int(dailyGoal)) ml")
+                        Text("of \(Int(dailyGoal)) \(settingsManager.volumeUnit.rawValue)")
                             .foregroundColor(.secondary)
                     }
                 }
                 .padding(.bottom, 30)
                 
-                Text("Add Intake")
-                    .font(.title2)
-                    .fontWeight(.medium)
+                Text("Add Intake").font(.title2).fontWeight(.medium)
                 
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 20) {
@@ -77,10 +69,8 @@ struct HomeView: View {
                                 }
                             }
                         }
-                    }
-                    .padding(.horizontal)
+                    }.padding(.horizontal)
                 }
-                
                 Spacer()
             }
             .padding(.vertical)
@@ -93,10 +83,11 @@ struct HomeView: View {
                 }
             }
             .sheet(isPresented: $showingSettings) {
-                SettingsView(dailyGoal: $dailyGoal, notificationsEnabled: $notificationsEnabled)
+                SettingsView(dailyGoal: $dailyGoal)
             }
+            // --- FIX 2: Remove the healthManager argument ---
             .sheet(item: $selectedDrink) { drink in
-                IntakeSelectionView(drink: drink, healthManager: healthManager)
+                IntakeSelectionView(drink: drink)
             }
         }
     }
