@@ -5,6 +5,7 @@
 //  Created by BitDegree on 08/07/25.
 //
 //
+//
 //  IntakeSelectionView.swift
 //  WaterTracker
 //
@@ -14,11 +15,7 @@ import SwiftUI
 struct IntakeSelectionView: View {
     let drink: Drink
     
-    // --- THE FIX IS HERE ---
-    // Changed from @ObservedObject to @EnvironmentObject.
-    // This view will now get the healthManager from the environment automatically.
     @EnvironmentObject var healthManager: HealthKitManager
-    
     @Environment(\.dismiss) var dismiss
 
     private let sizes: [Double] = [250, 330, 500, 750]
@@ -29,7 +26,8 @@ struct IntakeSelectionView: View {
                 Text("Log \(drink.name)")
                     .font(.largeTitle).fontWeight(.bold)
                 
-                Image(systemName: drink.imageName)
+                // --- MODIFIED: Use the new .icon property ---
+                drink.icon
                     .font(.system(size: 80)).foregroundColor(drink.color)
 
                 Text("Hydration Factor: \(Int(drink.hydrationFactor * 100))%")

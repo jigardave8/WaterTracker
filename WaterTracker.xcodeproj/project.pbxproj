@@ -67,6 +67,7 @@
 		E1418EBB2E1D3FEB00330701 /* Exceptions for "WaterTracker" folder in "WaterTrackerWatch Watch App" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				CloudSettingsManager.swift,
 				DailyIntake.swift,
 				Drink.swift,
 				HapticManager.swift,

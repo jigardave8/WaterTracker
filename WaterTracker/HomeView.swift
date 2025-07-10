@@ -4,36 +4,30 @@
 //
 //  Created by BitDegree on 09/07/25.
 //
-
 //
 //  HomeView.swift
 //  WaterTracker
 //
-//  This is the main "Today" screen for the iOS app.
-//
 
 import SwiftUI
-import HealthKit
 
 struct HomeView: View {
     @EnvironmentObject var healthManager: HealthKitManager
     @StateObject private var settingsManager = SettingsManager()
     
-    @AppStorage("dailyGoal") private var dailyGoal: Double = 2500
+    @State private var dailyGoal: Double = 0
     
     @State private var showingSettings = false
     @State private var selectedDrink: Drink? = nil
 
     var progress: Double {
         let total = healthManager.totalWaterToday
-        // We use the raw dailyGoal value for calculation, as both are now in the same unit.
         return dailyGoal > 0 ? total / dailyGoal : 0
     }
     
     var body: some View {
         NavigationView {
             VStack(spacing: 20) {
-                // --- FIX 1: Remove the healthManager argument ---
                 NavigationLink(destination: HistoryView()) {
                     Text("View Today's History")
                 }.padding(.top)
@@ -50,6 +44,9 @@ struct HomeView: View {
                         Text("of \(Int(dailyGoal)) \(settingsManager.volumeUnit.rawValue)")
                             .foregroundColor(.secondary)
                     }
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel("Daily Progress")
+                    .accessibilityValue("\(Int(healthManager.totalWaterToday)) of \(Int(dailyGoal)) \(settingsManager.volumeUnit.rawValue)")
                 }
                 .padding(.bottom, 30)
                 
@@ -60,7 +57,8 @@ struct HomeView: View {
                         ForEach(Drink.allDrinks) { drink in
                             Button(action: { self.selectedDrink = drink }) {
                                 VStack {
-                                    Image(systemName: drink.imageName).font(.largeTitle)
+                                    drink.icon
+                                        .font(.largeTitle)
                                         .foregroundColor(drink.color)
                                         .frame(width: 60, height: 60)
                                         .background(drink.color.opacity(0.15))
@@ -68,6 +66,7 @@ struct HomeView: View {
                                     Text(drink.name).font(.caption).foregroundColor(.primary)
                                 }
                             }
+                            .accessibilityLabel("Log \(drink.name)")
                         }
                     }.padding(.horizontal)
                 }
@@ -82,13 +81,22 @@ struct HomeView: View {
                     }
                 }
             }
+            // --- THIS IS THE CORRECTED PRESENTATION ---
+            // SettingsView is presented without any parameters. It handles its own state.
             .sheet(isPresented: $showingSettings) {
-                SettingsView(dailyGoal: $dailyGoal)
+                SettingsView()
             }
-            // --- FIX 2: Remove the healthManager argument ---
             .sheet(item: $selectedDrink) { drink in
                 IntakeSelectionView(drink: drink)
             }
+            .onAppear(perform: loadSettings)
+            .onReceive(NotificationCenter.default.publisher(for: .settingsDidChange)) { _ in
+                loadSettings()
+            }
         }
+    }
+    
+    func loadSettings() {
+        self.dailyGoal = CloudSettingsManager.shared.getDailyGoal()
     }
 }

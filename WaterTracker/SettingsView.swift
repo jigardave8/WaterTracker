@@ -4,115 +4,132 @@
 //
 //  Created by BitDegree on 08/07/25.
 //
-
+//
+//
 //
 //  SettingsView.swift
 //  WaterTracker
 //
-//  This is the main settings hub for the app, allowing users to configure their
-//  goal, units, notifications, and app icon.
-//
 
 import SwiftUI
+import MessageUI
 
 struct SettingsView: View {
-    @Binding var dailyGoal: Double
-    @Environment(\.dismiss) var dismiss
-    @StateObject private var settingsManager = SettingsManager()
+    @StateObject private var viewModel = SettingsViewModel()
     
+    @Environment(\.dismiss) var dismiss
     @State private var showingSuggestionSheet = false
     
-    // State for advanced reminders, saved in UserDefaults.
-    @AppStorage("remindersOn") private var remindersOn = false
-    @AppStorage("reminderStartTime") private var startTime = Calendar.current.date(byAdding: .hour, value: 8, to: Date.now.startOfDay)!
-    @AppStorage("reminderEndTime") private var endTime = Calendar.current.date(byAdding: .hour, value: 22, to: Date.now.startOfDay)!
-    @AppStorage("reminderInterval") private var interval = 120 // in minutes
+    @State private var showMailView = false
+    @State private var mailResult: Result<MFMailComposeResult, Error>? = nil
     
     let intervals = [60, 90, 120, 180, 240]
-    
-    // State for App Icon selection.
-    @State private var selectedAppIcon = AppIcon.primary
-    
+
     var body: some View {
         NavigationView {
-            Form {
-                Section(header: Text("Goal & Units")) {
-                    Stepper("\(Int(dailyGoal)) \(settingsManager.volumeUnit.rawValue)", value: $dailyGoal, in: 500...10000, step: 50)
-                    Picker("Volume Unit", selection: $settingsManager.volumeUnit) {
-                        ForEach(VolumeUnit.allCases) { unit in
-                            Text(unit.rawValue).tag(unit)
-                        }
+            formContent
+                .navigationTitle("Settings")
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button("Done") { dismiss() }.fontWeight(.bold)
                     }
-                    Button(action: { showingSuggestionSheet = true }) {
-                        Label("Calculate a Smart Goal", systemImage: "brain.head.profile")
-                    }.foregroundColor(.primary)
+                }
+                .sheet(isPresented: $showingSuggestionSheet) {
+                    GoalSuggestionView(dailyGoal: $viewModel.dailyGoal) {
+                        showingSuggestionSheet = false
+                    }
+                }
+                .sheet(isPresented: $showMailView) {
+                    MailView(result: self.$mailResult)
+                }
+        }
+    }
+    
+    private var formContent: some View {
+        Form {
+            Section(header: Text("Goal & Units")) {
+                Stepper("\(Int(viewModel.dailyGoal)) \(viewModel.volumeUnit.rawValue)", value: $viewModel.dailyGoal, in: 500...10000, step: 50)
+                    .onChange(of: viewModel.dailyGoal) { newValue in
+                        viewModel.setDailyGoal(newValue)
+                    }
+                
+                Picker("Volume Unit", selection: $viewModel.volumeUnit) {
+                    ForEach(VolumeUnit.allCases) { unit in
+                        Text(unit.rawValue).tag(unit)
+                    }
+                }
+                .onChange(of: viewModel.volumeUnit) { newValue in
+                    viewModel.setVolumeUnit(newValue)
                 }
                 
-                Section(header: Text("Reminders")) {
-                    Toggle("Enable Reminders", isOn: $remindersOn)
-                    if remindersOn {
-                        DatePicker("Start Time", selection: $startTime, displayedComponents: .hourAndMinute)
-                        DatePicker("End Time", selection: $endTime, displayedComponents: .hourAndMinute)
-                        Picker("Frequency", selection: $interval) {
-                            ForEach(intervals, id: \.self) { mins in
-                                Text(mins < 120 ? "Every \(mins) minutes" : "Every \(mins/60) hours").tag(mins)
-                            }
+                Button(action: { showingSuggestionSheet = true }) {
+                    Label("Calculate a Smart Goal", systemImage: "brain.head.profile")
+                }.foregroundColor(.primary)
+            }
+            
+            Section(header: Text("Permissions")) {
+                Button("Manage Health Access") {
+                    if let url = URL(string: "x-apple-health://sources/bitdegree.WaterTracker") {
+                        UIApplication.shared.open(url)
+                    }
+                }
+                .foregroundColor(.primary)
+            }
+            
+            Section(header: Text("Reminders")) {
+                Toggle("Enable Reminders", isOn: $viewModel.remindersOn)
+                    // --- THE FIX IS HERE ---
+                    // We now explicitly call scheduleNotifications when the user changes a setting.
+                    // This is clear, intentional, and avoids race conditions.
+                    .onChange(of: viewModel.remindersOn) { _ in viewModel.scheduleNotifications() }
+                
+                if viewModel.remindersOn {
+                    DatePicker("Start Time", selection: $viewModel.startTime, displayedComponents: .hourAndMinute)
+                        .onChange(of: viewModel.startTime) { _ in viewModel.scheduleNotifications() }
+                    
+                    DatePicker("End Time", selection: $viewModel.endTime, displayedComponents: .hourAndMinute)
+                        .onChange(of: viewModel.endTime) { _ in viewModel.scheduleNotifications() }
+
+                    Picker("Frequency", selection: $viewModel.interval) {
+                        ForEach(intervals, id: \.self) { mins in
+                            Text(mins < 120 ? "Every \(mins) minutes" : "Every \(mins/60) hours").tag(mins)
+                        }
+                    }
+                    .onChange(of: viewModel.interval) { _ in viewModel.scheduleNotifications() }
+                }
+            }
+
+            Section(header: Text("Appearance")) {
+                if UIApplication.shared.supportsAlternateIcons {
+                    Picker("App Icon", selection: $viewModel.selectedAppIcon) {
+                        ForEach(AppIcon.allCases) { icon in
+                            HStack {
+                                Image(uiImage: UIImage(named: icon.previewName) ?? UIImage())
+                                    .resizable().frame(width: 30, height: 30)
+                                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                                Text(icon.rawValue)
+                            }.tag(icon)
                         }
                     }
                 }
-                .onChange(of: remindersOn) { _ in scheduleNotifications() }
-                .onChange(of: startTime) { _ in scheduleNotifications() }
-                .onChange(of: endTime) { _ in scheduleNotifications() }
-                .onChange(of: interval) { _ in scheduleNotifications() }
-
-                Section(header: Text("Appearance")) {
-                    if UIApplication.shared.supportsAlternateIcons {
-                        Picker("App Icon", selection: $selectedAppIcon) {
-                            ForEach(AppIcon.allCases) { icon in
-                                HStack {
-                                    Image(uiImage: UIImage(named: icon.previewName) ?? UIImage())
-                                        .resizable().frame(width: 30, height: 30)
-                                        .clipShape(RoundedRectangle(cornerRadius: 6))
-                                    Text(icon.rawValue)
-                                }.tag(icon)
-                            }
-                        }
-                        .onChange(of: selectedAppIcon) { newValue in
-                            UIApplication.shared.setAlternateIconName(newValue.iconName)
-                        }
+            }
+            
+            Section(header: Text("Support & Feedback")) {
+                Button("Rate on the App Store") {
+                    if let url = URL(string: "itms-apps://itunes.apple.com/app/id123456789?action=write-review") {
+                        UIApplication.shared.open(url)
                     }
                 }
-            }
-            .navigationTitle("Settings")
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") { dismiss() }.fontWeight(.bold)
+                
+                Button("Contact Support") {
+                    if MFMailComposeViewController.canSendMail() {
+                        self.showMailView = true
+                    }
                 }
+                
+                Link("Privacy Policy", destination: URL(string: "https://www.apple.com")!)
             }
-            .sheet(isPresented: $showingSuggestionSheet) {
-                GoalSuggestionView(dailyGoal: $dailyGoal)
-            }
-            .onAppear(perform: loadInitialSettings)
+            .foregroundColor(.primary)
         }
-    }
-    
-    private func scheduleNotifications() {
-        NotificationManager.shared.scheduleAdvancedReminders(isEnabled: remindersOn, startTime: startTime, endTime: endTime, intervalInMinutes: interval)
-    }
-    
-    private func loadInitialSettings() {
-        // Load the currently active app icon to set the picker's state.
-        if let iconName = UIApplication.shared.alternateIconName {
-            selectedAppIcon = AppIcon.allCases.first { $0.iconName == iconName } ?? .primary
-        } else {
-            selectedAppIcon = .primary
-        }
-    }
-}
-
-// Helper extension to get the start of the day.
-extension Date {
-    var startOfDay: Date {
-        return Calendar.current.startOfDay(for: self)
     }
 }
