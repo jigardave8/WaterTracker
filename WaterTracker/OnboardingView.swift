@@ -5,108 +5,101 @@
 //  Created by BitDegree on 10/07/25.
 //
 //
+//
 //  OnboardingView.swift
 //  WaterTracker
 //
-//  This is the main container for the multi-page onboarding flow, shown only
-//  to first-time users. It uses a TabView with a page style.
+//  A complete onboarding flow with permissions and a final completion page.
 //
 
 import SwiftUI
 
 struct OnboardingView: View {
-    // This property, when set to false, dismisses the onboarding flow.
     @Binding var isOnboarding: Bool
     
     var body: some View {
         TabView {
             // Page 1: Welcome
-            OnboardingPage(
-                imageName: "drop.fill",
-                title: "Welcome to WaterTracker",
-                description: "Your simple, beautiful companion to stay hydrated and healthy."
-            )
+            OnboardingPage(imageName: "drop.fill", title: "Welcome to WaterTracker", description: "Your simple, beautiful companion to stay hydrated and healthy.")
             
             // Page 2: HealthKit Permission
-            OnboardingPage(
-                imageName: "heart.text.square.fill",
-                title: "Integrate with Health",
-                description: "We use Apple Health to securely save your data and sync across all your devices.",
-                isPermissionPage: true,
-                permissionAction: {
-                    // Instantiating the manager triggers the permission prompt.
-                    _ = HealthKitManager()
-                }
-            )
+            OnboardingPage(imageName: "heart.text.square.fill", title: "Integrate with Health", description: "Securely save your data and sync across all your devices.", isPermissionPage: true, buttonText: "Allow Health Access") {
+                _ = HealthKitManager()
+            }
             
-            // Page 3: Smart Goal Setup
-            OnboardingGoalSetupPage(isOnboarding: $isOnboarding)
+            // Page 3: Notification Permission
+            OnboardingPage(imageName: "bell.badge.fill", title: "Enable Reminders", description: "Let us help you stay on track with periodic notifications.", isPermissionPage: true, buttonText: "Enable Reminders") {
+                NotificationManager.shared.requestAuthorization { granted in
+                    // If granted, we can turn the reminders on by default.
+                    if granted {
+                        UserDefaults.standard.set(true, forKey: "remindersOn")
+                    }
+                }
+            }
+
+            // Page 4: Smart Goal Setup
+            OnboardingGoalSetupPage()
+            
+            // Page 5: Completion
+            OnboardingCompletionPage(isOnboarding: $isOnboarding)
         }
         .tabViewStyle(.page(indexDisplayMode: .always))
-        .background(Color(.systemGroupedBackground))
+        .background(Color.appBackground)
         .ignoresSafeArea(.all)
     }
 }
 
-// A reusable view for the informational onboarding pages
+// Reusable Onboarding Page View
 struct OnboardingPage: View {
     let imageName: String
     let title: String
     let description: String
     var isPermissionPage: Bool = false
+    var buttonText: String = "Continue"
     var permissionAction: (() -> Void)? = nil
     
     var body: some View {
         VStack(spacing: 20) {
             Spacer()
-            Image(systemName: imageName)
-                .font(.system(size: 100))
-                .foregroundColor(.blue)
-                .padding(.bottom, 20)
-            
-            Text(title)
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .multilineTextAlignment(.center)
-            
-            Text(description)
-                .font(.headline)
-                .multilineTextAlignment(.center)
-                .foregroundColor(.secondary)
+            Image(systemName: imageName).font(.system(size: 100)).foregroundColor(.primaryBlue).padding(.bottom, 20)
+            Text(title).font(.largeTitle).fontWeight(.bold).multilineTextAlignment(.center)
+            Text(description).font(.headline).multilineTextAlignment(.center).foregroundColor(.secondary)
             
             if isPermissionPage {
-                Button(action: {
-                    permissionAction?()
-                }) {
-                    Text("Allow Access")
-                        .fontWeight(.bold)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(12)
-                }
-                .padding(.top, 30)
+                Button(action: { permissionAction?() }) {
+                    Text(buttonText).fontWeight(.bold).padding().frame(maxWidth: .infinity).background(Color.accentGradient).foregroundColor(.white).cornerRadius(12)
+                }.padding(.top, 30)
             }
             Spacer()
             Spacer()
-        }
-        .padding(40)
+        }.padding(40)
     }
 }
 
-// A special wrapper view for the goal setup page during onboarding
+// Wrapper for Goal Suggestion page in onboarding
 struct OnboardingGoalSetupPage: View {
-    @Binding var isOnboarding: Bool
-    // Use a local state for the goal during setup
     @State private var tempGoal: Double = 2500
-    
     var body: some View {
         GoalSuggestionView(dailyGoal: $tempGoal, isFromOnboarding: true) {
-            // This is the completion handler. When the user saves their goal,
-            // we save it to our Cloud manager and turn off the onboarding flag.
             CloudSettingsManager.shared.setDailyGoal(tempGoal)
-            isOnboarding = false
         }
+    }
+}
+
+// Final "You're All Set!" page
+struct OnboardingCompletionPage: View {
+    @Binding var isOnboarding: Bool
+    var body: some View {
+        VStack(spacing: 20) {
+            Spacer()
+            Image(systemName: "checkmark.circle.fill").font(.system(size: 100)).foregroundColor(.green)
+            Text("You're All Set!").font(.largeTitle).fontWeight(.bold)
+            Text("Let's start your hydration journey together.").font(.headline).foregroundColor(.secondary)
+            Button(action: { isOnboarding = false }) {
+                Text("Get Started").fontWeight(.bold).padding().frame(maxWidth: .infinity).background(Color.accentGradient).foregroundColor(.white).cornerRadius(12)
+            }.padding(.top, 30)
+            Spacer()
+            Spacer()
+        }.padding(40)
     }
 }

@@ -4,13 +4,9 @@
 //
 //  Created by BitDegree on 08/07/25.
 //
-
 //
 //  NotificationManager.swift
 //  WaterTracker
-//
-//  This manager handles the logic for scheduling and canceling all local notifications.
-//  It now supports an advanced scheduling model with start/end times and frequency.
 //
 
 import Foundation
@@ -20,29 +16,36 @@ class NotificationManager {
     static let shared = NotificationManager()
     private init() {}
 
-    // Request user permission for notifications.
-    func requestAuthorization() {
+    // Asks for permission and uses a completion handler to report the result.
+    func requestAuthorization(completion: @escaping (Bool) -> Void) {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { success, error in
-            if success {
-                print("Notification authorization granted.")
-            } else if let error = error {
-                print(error.localizedDescription)
+            if let error = error {
+                print("Error requesting notification auth: \(error.localizedDescription)")
+            }
+            DispatchQueue.main.async {
+                completion(success)
             }
         }
     }
 
-    // Schedules reminders based on detailed user preferences.
-    func scheduleAdvancedReminders(isEnabled: Bool, startTime: Date, endTime: Date, intervalInMinutes: Int) {
+    // Schedules notifications with dynamic content and custom sounds for Pro users.
+    func scheduleAdvancedReminders(isPro: Bool, isEnabled: Bool, startTime: Date, endTime: Date, intervalInMinutes: Int, soundName: String) {
         cancelAllNotifications()
         guard isEnabled, intervalInMinutes > 0 else {
-            print("Reminders are disabled or interval is zero. All notifications cancelled.")
+            print("Reminders are disabled. All notifications cancelled.")
             return
         }
 
         let content = UNMutableNotificationContent()
         content.title = "Time for Water! 💧"
-        content.body = "Stay hydrated to keep your energy levels up. Let's log some water."
-        content.sound = .default
+        content.body = MotivationManager.shared.getMotivationalMessage(isPro: isPro)
+        
+        // Use a custom sound for Pro users, otherwise the default sound.
+        if isPro && soundName != "default" {
+            content.sound = UNNotificationSound(named: UNNotificationSoundName(soundName))
+        } else {
+            content.sound = .default
+        }
         
         let startComponents = Calendar.current.dateComponents([.hour, .minute], from: startTime)
         let endComponents = Calendar.current.dateComponents([.hour, .minute], from: endTime)
@@ -53,7 +56,6 @@ class NotificationManager {
         var currentHour = startHour
         var currentMinute = startMinute
         
-        // Loop from start time to end time, creating a notification for each interval.
         while currentHour < endHour || (currentHour == endHour && currentMinute <= endComponents.minute ?? 0) {
             var dateComponents = DateComponents()
             dateComponents.hour = currentHour
@@ -63,7 +65,6 @@ class NotificationManager {
             let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
             UNUserNotificationCenter.current().add(request)
             
-            // Calculate the time for the next notification.
             guard let currentDate = Calendar.current.date(from: dateComponents),
                   let nextDate = Calendar.current.date(byAdding: .minute, value: intervalInMinutes, to: currentDate) else { break }
             
@@ -71,12 +72,10 @@ class NotificationManager {
             currentHour = nextComponents.hour!
             currentMinute = nextComponents.minute!
         }
-        print("Advanced reminders scheduled from \(startHour):\(startMinute) to \(endHour):\(endComponents.minute ?? 0) every \(intervalInMinutes) minutes.")
+        print("Advanced reminders scheduled.")
     }
 
-    // Clears all previously scheduled notifications.
     func cancelAllNotifications() {
         UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
-        print("All pending notifications cancelled.")
     }
 }
