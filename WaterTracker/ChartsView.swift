@@ -5,13 +5,6 @@
 //  Created by BitDegree on 09/07/25.
 //
 
-//
-//  ChartsView.swift
-//  WaterTracker
-//
-//  Created by BitDegree on 09/07/25.
-//
-
 import SwiftUI
 import Charts
 
@@ -99,8 +92,10 @@ struct ChartsView: View {
             .padding()
             Spacer()
         }
+        // --- THIS IS THE FIX ---
+        // Call the fetch function with the required completion parameter.
         .onAppear {
-            healthManager.fetchWeeklyIntake()
+            healthManager.fetchWeeklyIntake(completion: nil)
         }
     }
 }

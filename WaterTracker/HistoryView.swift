@@ -5,13 +5,6 @@
 //  Created by BitDegree on 08/07/25.
 //
 
-//
-//  HistoryView.swift
-//  WaterTracker
-//
-//  Created by BitDegree on 08/07/25.
-//
-
 import SwiftUI
 import HealthKit
 
@@ -33,8 +26,10 @@ struct HistoryView: View {
             .onDelete(perform: deleteEntry)
         }
         .navigationTitle("Today's History")
+        // --- THIS IS THE FIX ---
+        // Call the fetch function with the required completion parameter.
         .onAppear {
-            healthManager.fetchDailyHistory()
+            healthManager.fetchDailyHistory(completion: nil)
         }
     }
     

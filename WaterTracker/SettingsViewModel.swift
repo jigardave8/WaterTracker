@@ -9,42 +9,18 @@ import SwiftUI
 import Combine
 
 class SettingsViewModel: ObservableObject {
-    // MARK: - Published Properties
-    
     @Published var dailyGoal: Double
-    @Published var volumeUnit: VolumeUnit // This will now correctly reference the global type
+    @Published var volumeUnit: VolumeUnit
     
-    @Published var remindersOn: Bool {
-        didSet { UserDefaults.standard.set(remindersOn, forKey: "remindersOn") }
-    }
-    
-    @Published var startTime: Date {
-        didSet { UserDefaults.standard.set(startTime.timeIntervalSince1970, forKey: "reminderStartTime") }
-    }
-    
-    @Published var endTime: Date {
-        didSet { UserDefaults.standard.set(endTime.timeIntervalSince1970, forKey: "reminderEndTime") }
-    }
-    
-    @Published var interval: Int {
-        didSet { UserDefaults.standard.set(interval, forKey: "reminderInterval") }
-    }
-    
-    @Published var selectedAppIcon: AppIcon {
-        didSet {
-            // This is iOS-specific code and is safe here.
-            UIApplication.shared.setAlternateIconName(selectedAppIcon.iconName)
-        }
-    }
-    
-    @Published var soundName: String {
-        didSet { UserDefaults.standard.set(soundName, forKey: "soundName") }
-    }
+    @Published var remindersOn: Bool { didSet { UserDefaults.standard.set(remindersOn, forKey: "remindersOn") } }
+    @Published var startTime: Date { didSet { UserDefaults.standard.set(startTime.timeIntervalSince1970, forKey: "reminderStartTime") } }
+    @Published var endTime: Date { didSet { UserDefaults.standard.set(endTime.timeIntervalSince1970, forKey: "reminderEndTime") } }
+    @Published var interval: Int { didSet { UserDefaults.standard.set(interval, forKey: "reminderInterval") } }
+    @Published var selectedAppIcon: AppIcon { didSet { UIApplication.shared.setAlternateIconName(selectedAppIcon.iconName) } }
+    @Published var soundName: String { didSet { UserDefaults.standard.set(soundName, forKey: "soundName") } }
     
     private var cancellables = Set<AnyCancellable>()
 
-    // MARK: - Initialization
-    
     init() {
         self.dailyGoal = 2500
         self.volumeUnit = .milliliters
@@ -59,13 +35,9 @@ class SettingsViewModel: ObservableObject {
         
         NotificationCenter.default.publisher(for: .settingsDidChange)
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                self?.loadAllSettings()
-            }
+            .sink { [weak self] _ in self?.loadAllSettings() }
             .store(in: &cancellables)
     }
-    
-    // MARK: - Public Methods
     
     func setVolumeUnit(_ unit: VolumeUnit) {
         CloudSettingsManager.shared.setVolumeUnit(unit)
@@ -75,20 +47,14 @@ class SettingsViewModel: ObservableObject {
     func setDailyGoal(_ goal: Double) {
         CloudSettingsManager.shared.setDailyGoal(goal)
         self.dailyGoal = goal
+        // --- THIS IS THE FIX ---
+        // We explicitly tell the grant function which AwardID we are using.
+        AwardsManager().grant(id: AwardID.goalSetter)
     }
     
     func handleReminderSettingsChange(isPro: Bool) {
-        NotificationManager.shared.scheduleAdvancedReminders(
-            isPro: isPro,
-            isEnabled: remindersOn,
-            startTime: startTime,
-            endTime: endTime,
-            intervalInMinutes: interval,
-            soundName: soundName
-        )
+        NotificationManager.shared.scheduleAdvancedReminders(isPro: isPro, isEnabled: remindersOn, startTime: startTime, endTime: endTime, intervalInMinutes: interval, soundName: soundName)
     }
-    
-    // MARK: - Private Helper Methods
     
     private func loadAllSettings() {
         dailyGoal = CloudSettingsManager.shared.getDailyGoal()
@@ -105,13 +71,26 @@ class SettingsViewModel: ObservableObject {
         
         let savedInterval = UserDefaults.standard.integer(forKey: "reminderInterval")
         interval = savedInterval > 0 ? savedInterval : 120
-        
         soundName = UserDefaults.standard.string(forKey: "soundName") ?? "default"
         
-        if let iconName = UIApplication.shared.alternateIconName {
-            selectedAppIcon = AppIcon.allCases.first { $0.iconName == iconName } ?? .primary
+        if let iconName = UIApplication.shared.alternateIconName, let appIcon = AppIcon(iconName: iconName) {
+            selectedAppIcon = appIcon
         } else {
             selectedAppIcon = .primary
         }
+    }
+}
+
+// This helper extension was missing from a previous version, but is needed for the app icon logic.
+extension AppIcon {
+    init?(iconName: String?) {
+        guard let name = iconName else {
+            self = .primary
+            return
+        }
+        guard let aCase = AppIcon.allCases.first(where: { $0.iconName == name }) else {
+            return nil
+        }
+        self = aCase
     }
 }

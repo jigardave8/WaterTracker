@@ -20,8 +20,6 @@ struct ContentView: View {
     var body: some View {
         VStack {
             HStack {
-                // --- THIS IS THE FIX ---
-                // Use the new SimpleProgressCircle and specify a line width.
                 SimpleProgressCircle(progress: progress, lineWidth: 8)
                     .frame(width: 50, height: 50)
                 
@@ -45,6 +43,8 @@ struct ContentView: View {
         .padding(.top, 1)
         .navigationTitle("Water Tracker")
         .navigationBarTitleDisplayMode(.inline)
-        .onAppear { healthManager.fetchAllTodayData() }
+        // --- THIS IS THE FIX ---
+        // Call the fetch function with the required completion parameter.
+        .onAppear { healthManager.fetchAllTodayData(completion: nil) }
     }
 }

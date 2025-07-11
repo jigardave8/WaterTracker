@@ -73,6 +73,7 @@
 				AwardsManager.swift,
 				CloudSettingsManager.swift,
 				DailyIntake.swift,
+				"Date+Extensions.swift",
 				Drink.swift,
 				HapticManager.swift,
 				HealthKitManager.swift,

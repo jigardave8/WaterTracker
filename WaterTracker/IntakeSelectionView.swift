@@ -4,13 +4,6 @@
 //
 //  Created by BitDegree on 08/07/25.
 //
-//
-//
-//  IntakeSelectionView.swift
-//  WaterTracker
-//
-//  Created by BitDegree on 08/07/25.
-//
 
 import SwiftUI
 
@@ -20,7 +13,6 @@ struct IntakeSelectionView: View {
     @EnvironmentObject var healthManager: HealthKitManager
     @Environment(\.dismiss) var dismiss
 
-    // State to manage the custom amount alert
     @State private var showingCustomAmountAlert = false
     @State private var customAmountString = ""
 
@@ -41,10 +33,9 @@ struct IntakeSelectionView: View {
                 Text("Select Size (ml)").font(.headline)
                 
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
-                    // Loop through the predefined sizes
                     ForEach(sizes, id: \.self) { size in
                         Button(action: {
-                            logIntake(amount: size)
+                            logIntake(amount: size, isCustom: false)
                         }) {
                             Text("\(Int(size))")
                                 .font(.title2).fontWeight(.semibold)
@@ -54,9 +45,8 @@ struct IntakeSelectionView: View {
                         }
                     }
                     
-                    // --- NEW: Custom Amount Button ---
                     Button(action: {
-                        customAmountString = "" // Reset text field
+                        customAmountString = ""
                         showingCustomAmountAlert = true
                     }) {
                         Image(systemName: "pencil.and.ruler.fill")
@@ -72,14 +62,13 @@ struct IntakeSelectionView: View {
             .padding(.top, 20)
             .navigationBarItems(trailing: Button("Cancel") { dismiss() })
             .navigationBarTitleDisplayMode(.inline)
-            // --- NEW: Alert for Custom Input ---
             .alert("Enter Custom Amount (ml)", isPresented: $showingCustomAmountAlert) {
                 TextField("e.g., 600", text: $customAmountString)
-                    .keyboardType(.numberPad) // Use a number pad for easier input
+                    .keyboardType(.numberPad)
                 
                 Button("Log") {
                     if let amount = Double(customAmountString) {
-                        logIntake(amount: amount)
+                        logIntake(amount: amount, isCustom: true)
                     }
                 }
                 Button("Cancel", role: .cancel) { }
@@ -87,9 +76,8 @@ struct IntakeSelectionView: View {
         }
     }
     
-    // Helper function to centralize logging logic
-    private func logIntake(amount: Double) {
-        healthManager.saveWaterIntake(drink: drink, amountInML: amount)
+    private func logIntake(amount: Double, isCustom: Bool) {
+        healthManager.saveWaterIntake(drink: drink, amountInML: amount, isCustom: isCustom)
         dismiss()
     }
 }
