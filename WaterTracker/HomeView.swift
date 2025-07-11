@@ -7,10 +7,11 @@
 //
 //
 //
+//
 //  HomeView.swift
 //  WaterTracker
 //
-//  The main "Today" screen, featuring both the animated body graphic and a circular progress bar.
+//  The final, polished Home Screen with multiple progress visualizations.
 //
 
 import SwiftUI
@@ -24,6 +25,7 @@ struct HomeView: View {
     
     @State private var selectedDrink: Drink? = nil
     
+    // This state is managed by the ViewModel, but we read it here to show the banner.
     @AppStorage("remindersOn") private var remindersOn: Bool = true
     
     var progress: Double {
@@ -37,34 +39,49 @@ struct HomeView: View {
             
             ScrollView {
                 VStack(spacing: 16) {
+                    // Date Header
                     Text(Date.now.longDayMonthDayFormat)
                         .font(.headline)
                         .fontWeight(.semibold)
                         .foregroundColor(.secondary)
                         .padding(.top)
 
-                    // --- THIS IS THE FIX: Both views are now present ---
+                    // The combined progress/body view
                     ZStack {
                         // The circular progress bar is in the background.
                         ProgressCircleView(progress: progress)
-                            .frame(width: 250, height: 250)
+                            .frame(width: 320, height: 320)
                         
                         // The animated body is in the foreground, slightly smaller.
                         BodyFillView(progress: progress)
-                            .frame(height: 200)
+                            .frame(height: 250)
+                        
+                        // The animated intake number
+                        VStack {
+                            Text("\(Int(healthManager.totalWaterToday))")
+                                .font(.system(size: 60, weight: .bold, design: .rounded))
+                                .foregroundColor(.white)
+                                .contentTransition(.numericText()) // Animates number changes
+                            
+                            Text(settingsManager.volumeUnit.rawValue)
+                                .font(.title3).fontWeight(.medium)
+                                .foregroundColor(.white.opacity(0.8))
+                        }
                     }
-                    .padding(.top, 20)
+                    .padding(.top, 10)
                     
+                    // Progress Text
                     VStack {
-                        Text("\(Int(healthManager.totalWaterToday)) / \(Int(dailyGoal)) \(settingsManager.volumeUnit.rawValue)")
-                            .font(.system(size: 36, weight: .bold, design: .rounded))
+                        Text(progress >= 1.0 ? "Goal Achieved! 🎉" : "Today's Progress")
+                            .font(.title2).fontWeight(.bold)
                             .foregroundColor(.primaryBlue)
-                        Text("Today's Progress")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
+                        
+                        Text("\(Int(progress * 100))% of your \(Int(dailyGoal)) \(settingsManager.volumeUnit.rawValue) goal")
+                            .font(.subheadline).foregroundColor(.secondary)
                     }
                     .padding(.bottom, 20)
 
+                    // "Reminders Off" Banner
                     if !remindersOn {
                         HStack {
                             Image(systemName: "bell.slash.fill")
@@ -77,6 +94,7 @@ struct HomeView: View {
                     
                     Text("Add Intake").font(.title2).fontWeight(.medium)
                     
+                    // Drink Buttons
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 20) {
                             ForEach(Drink.allDrinks) { drink in

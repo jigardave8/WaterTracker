@@ -5,12 +5,12 @@
 //  Created by BitDegree on 08/07/25.
 //
 //
+//
 //  HealthKitManager.swift
 //  WaterTracker
 //
-//  This file is the central point for all HealthKit interactions. It handles
-//  saving, fetching, and deleting water intake data, now with support for
-//  custom units and haptic feedback.
+//  This is the central point for all HealthKit interactions. It now triggers
+//  the AwardsManager after a successful save.
 //
 
 import Foundation
@@ -31,7 +31,8 @@ class HealthKitManager: ObservableObject {
     @Published var history: [HKQuantitySample] = []
     @Published var weeklyIntakeData: [DailyIntake] = []
     
-    // NEW: A reference to the settings manager to get the current unit preference.
+    // Add a reference to the awards manager so we can trigger checks.
+    var awardsManager: AwardsManager?
     private var settingsManager = SettingsManager()
 
     init() {
@@ -51,24 +52,20 @@ class HealthKitManager: ObservableObject {
         }
     }
     
-    // This now fetches all data and then updates the shared container for the widget.
     func fetchAllTodayData() {
         fetchTodayWaterIntake { [weak self] in
             guard let self = self else { return }
             
-            // After fetching the total, update the shared data for the widget
-            let currentGoal = UserDefaults.standard.double(forKey: "dailyGoal")
+            let currentGoal = CloudSettingsManager.shared.getDailyGoal()
             let sharedData = SharedData(totalToday: self.totalWaterToday, dailyGoal: currentGoal)
             SharedDataManager.shared.save(data: sharedData)
             
-            // Tell the widget to reload its timeline
             WidgetCenter.shared.reloadAllTimelines()
         }
         fetchDailyHistory()
-        fetchWeeklyIntake() // Also fetch weekly data
+        fetchWeeklyIntake()
     }
     
-    // This function now accepts the drink object to save its metadata.
     func saveWaterIntake(drink: Drink, amountInML: Double) {
         guard let waterType = HKQuantityType.quantityType(forIdentifier: .dietaryWater) else {
             print("Dietary Water type is unavailable.")
@@ -82,17 +79,18 @@ class HealthKitManager: ObservableObject {
             MetadataKeys.originalVolume: amountInML
         ]
         
-        // HealthKit always saves in a base unit (liters), which avoids conversion issues.
         let waterQuantity = HKQuantity(unit: .literUnit(with: .milli), doubleValue: hydratedAmount)
         let waterSample = HKQuantitySample(type: waterType, quantity: waterQuantity, start: Date(), end: Date(), metadata: metadata)
         
         healthStore.save(waterSample) { success, error in
             if success {
                 print("Successfully saved \(amountInML)ml of \(drink.name).")
-                // Trigger haptic feedback on success.
                 HapticManager.shared.simpleSuccess()
                 DispatchQueue.main.async {
-                    self.fetchAllTodayData() // Re-fetch all data to update UI and widget
+                    self.fetchAllTodayData()
+                    
+                    // NEW: Check for awards after updating data.
+                    self.awardsManager?.checkAwards(afterLogging: drink, healthManager: self)
                 }
             } else if let error = error {
                 print("Error saving water intake: \(error.localizedDescription)")
@@ -100,7 +98,6 @@ class HealthKitManager: ObservableObject {
         }
     }
 
-    // Now has a completion handler for chaining operations.
     func fetchTodayWaterIntake(completion: (() -> Void)? = nil) {
         guard let waterType = HKQuantityType.quantityType(forIdentifier: .dietaryWater) else {
             completion?()
@@ -111,14 +108,10 @@ class HealthKitManager: ObservableObject {
         let predicate = HKQuery.predicateForSamples(withStart: today, end: nil, options: .strictStartDate)
         let query = HKStatisticsQuery(quantityType: waterType, quantitySamplePredicate: predicate, options: .cumulativeSum) { _, result, error in
             guard let result = result, let sum = result.sumQuantity() else {
-                DispatchQueue.main.async {
-                    self.totalWaterToday = 0
-                    completion?()
-                }
+                DispatchQueue.main.async { self.totalWaterToday = 0; completion?() }
                 return
             }
             DispatchQueue.main.async {
-                // Return the value in the user's preferred unit.
                 self.totalWaterToday = sum.doubleValue(for: self.settingsManager.volumeUnit.healthKitUnit)
                 completion?()
             }
@@ -126,7 +119,6 @@ class HealthKitManager: ObservableObject {
         healthStore.execute(query)
     }
 
-    // Fetches individual entries for the history view.
     func fetchDailyHistory() {
         guard let waterType = HKQuantityType.quantityType(forIdentifier: .dietaryWater) else { return }
         
@@ -140,29 +132,21 @@ class HealthKitManager: ObservableObject {
                 if let error = error { print("Error fetching daily history: \(error.localizedDescription)") }
                 return
             }
-            
-            DispatchQueue.main.async {
-                self.history = samples
-            }
+            DispatchQueue.main.async { self.history = samples }
         }
         healthStore.execute(query)
     }
 
-    // Deletes a specific sample from HealthKit.
     func deleteSample(_ sample: HKQuantitySample) {
         healthStore.delete(sample) { success, error in
             if success {
-                print("Successfully deleted sample.")
-                DispatchQueue.main.async {
-                    self.fetchAllTodayData()
-                }
+                DispatchQueue.main.async { self.fetchAllTodayData() }
             } else if let error = error {
                 print("Error deleting sample: \(error.localizedDescription)")
             }
         }
     }
 
-    // Fetches aggregated data for the last 7 days for the chart.
     func fetchWeeklyIntake() {
         guard let waterType = HKQuantityType.quantityType(forIdentifier: .dietaryWater) else { return }
         
@@ -174,28 +158,15 @@ class HealthKitManager: ObservableObject {
         let anchorDate = calendar.startOfDay(for: startDate)
         let interval = DateComponents(day: 1)
         
-        let query = HKStatisticsCollectionQuery(
-            quantityType: waterType,
-            quantitySamplePredicate: predicate,
-            options: .cumulativeSum,
-            anchorDate: anchorDate,
-            intervalComponents: interval
-        )
-        
+        let query = HKStatisticsCollectionQuery(quantityType: waterType, quantitySamplePredicate: predicate, options: .cumulativeSum, anchorDate: anchorDate, intervalComponents: interval)
         query.initialResultsHandler = { query, result, error in
             guard let result = result else { return }
-            
             var dailyData: [DailyIntake] = []
-            
             result.enumerateStatistics(from: startDate, to: today) { statistics, stop in
-                // Return the value for each day in the user's preferred unit.
                 let intakeForDay = statistics.sumQuantity()?.doubleValue(for: self.settingsManager.volumeUnit.healthKitUnit) ?? 0
                 dailyData.append(DailyIntake(date: statistics.startDate, intake: intakeForDay))
             }
-            
-            DispatchQueue.main.async {
-                self.weeklyIntakeData = dailyData
-            }
+            DispatchQueue.main.async { self.weeklyIntakeData = dailyData }
         }
         healthStore.execute(query)
     }
