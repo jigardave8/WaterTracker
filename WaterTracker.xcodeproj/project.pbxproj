@@ -77,8 +77,8 @@
 				HapticManager.swift,
 				HealthKitManager.swift,
 				ProgressCircleView.swift,
-				SettingsManager.swift,
 				SharedDataManager.swift,
+				VolumeUnit.swift,
 				"Water Track Dark.jpg",
 			);
 			target = E1418EA62E1D3EA100330701 /* WaterTrackerWatch Watch App */;
@@ -95,6 +95,7 @@
 			membershipExceptions = (
 				ProgressCircleView.swift,
 				SharedDataManager.swift,
+				VolumeUnit.swift,
 				"Water Track Dark.jpg",
 			);
 			target = E14419462E1DA2E700D1BCF0 /* WaterWidgetExtension */;

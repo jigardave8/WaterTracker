@@ -6,12 +6,10 @@
 //
 //
 //
-//
-//
 //  HomeView.swift
 //  WaterTracker
 //
-//  The final, polished Home Screen with multiple progress visualizations.
+//  Created by BitDegree on 09/07/25.
 //
 
 import SwiftUI
@@ -19,13 +17,12 @@ import SwiftUI
 struct HomeView: View {
     @EnvironmentObject var healthManager: HealthKitManager
     @EnvironmentObject var storeManager: StoreManager
+    @EnvironmentObject var settingsViewModel: SettingsViewModel
     
-    @StateObject private var settingsManager = SettingsManager()
     @State private var dailyGoal: Double = 0
-    
+    // This state variable tracks which drink was tapped to show the correct sheet.
     @State private var selectedDrink: Drink? = nil
     
-    // This state is managed by the ViewModel, but we read it here to show the banner.
     @AppStorage("remindersOn") private var remindersOn: Bool = true
     
     var progress: Double {
@@ -39,88 +36,75 @@ struct HomeView: View {
             
             ScrollView {
                 VStack(spacing: 16) {
-                    // Date Header
                     Text(Date.now.longDayMonthDayFormat)
-                        .font(.headline)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.secondary)
-                        .padding(.top)
+                        .font(.headline).fontWeight(.semibold).foregroundColor(.secondary).padding(.top)
 
-                    // The combined progress/body view
                     ZStack {
-                        // The circular progress bar is in the background.
                         ProgressCircleView(progress: progress)
                             .frame(width: 320, height: 320)
                         
-                        // The animated body is in the foreground, slightly smaller.
                         BodyFillView(progress: progress)
                             .frame(height: 250)
                         
-                        // The animated intake number
                         VStack {
                             Text("\(Int(healthManager.totalWaterToday))")
                                 .font(.system(size: 60, weight: .bold, design: .rounded))
-                                .foregroundColor(.white)
-                                .contentTransition(.numericText()) // Animates number changes
+                                .contentTransition(.numericText())
                             
-                            Text(settingsManager.volumeUnit.rawValue)
+                            Text(settingsViewModel.volumeUnit.rawValue)
                                 .font(.title3).fontWeight(.medium)
-                                .foregroundColor(.white.opacity(0.8))
                         }
+                        .foregroundColor(.white)
+                        .background(
+                            Circle()
+                                .fill(.black.opacity(0.3))
+                                .frame(width: 180, height: 180)
+                                .blur(radius: 20)
+                                .opacity(progress > 0.5 ? 1 : 0)
+                                .animation(.easeIn, value: progress)
+                        )
                     }
                     .padding(.top, 10)
                     
-                    // Progress Text
                     VStack {
                         Text(progress >= 1.0 ? "Goal Achieved! 🎉" : "Today's Progress")
-                            .font(.title2).fontWeight(.bold)
-                            .foregroundColor(.primaryBlue)
+                            .font(.title2).fontWeight(.bold).foregroundColor(.primaryBlue)
                         
-                        Text("\(Int(progress * 100))% of your \(Int(dailyGoal)) \(settingsManager.volumeUnit.rawValue) goal")
+                        Text("\(Int(progress * 100))% of your \(Int(dailyGoal)) \(settingsViewModel.volumeUnit.rawValue) goal")
                             .font(.subheadline).foregroundColor(.secondary)
                     }
                     .padding(.bottom, 20)
-
-                    // "Reminders Off" Banner
-                    if !remindersOn {
-                        HStack {
-                            Image(systemName: "bell.slash.fill")
-                            Text("Reminders are turned off.")
-                        }
-                        .font(.caption).foregroundColor(.orange)
-                        .padding(8).background(Color.orange.opacity(0.1))
-                        .cornerRadius(8).transition(.opacity.combined(with: .move(edge: .top)))
-                    }
                     
+                    // --- START OF NEW/RESTORED CODE ---
                     Text("Add Intake").font(.title2).fontWeight(.medium)
                     
-                    // Drink Buttons
                     ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 20) {
+                        HStack(spacing: 12) {
                             ForEach(Drink.allDrinks) { drink in
-                                Button(action: { self.selectedDrink = drink }) {
-                                    VStack {
-                                        drink.icon
-                                            .font(.largeTitle)
-                                            .foregroundColor(drink.color)
-                                            .frame(width: 60, height: 60)
-                                            .background(Color(.systemGray6))
-                                            .clipShape(Circle())
-                                            .shadow(color: .black.opacity(0.1), radius: 3, x: 0, y: 2)
-                                        Text(drink.name).font(.caption).foregroundColor(.primary)
-                                    }
+                                Button(action: {
+                                    // Set the selected drink to trigger the sheet
+                                    self.selectedDrink = drink
+                                }) {
+                                    DrinkButtonView(drink: drink)
                                 }
-                                .accessibilityLabel("Log \(drink.name)")
                             }
-                        }.padding(.horizontal)
+                        }
+                        .padding(.horizontal)
                     }
-                    .frame(height: 100) // Give the scroll view a fixed height
+                    .frame(height: 100)
+                    // --- END OF NEW/RESTORED CODE ---
                 }
             }
-            .animation(.default, value: remindersOn)
-            .sheet(item: $selectedDrink) { drink in IntakeSelectionView(drink: drink) }
+            // The sheet modifier is now correctly triggered when `selectedDrink` is not nil.
+            .sheet(item: $selectedDrink) { drink in
+                IntakeSelectionView(drink: drink)
+                    // Pass the environment objects down to the sheet
+                    .environmentObject(healthManager)
+            }
             .onAppear(perform: loadSettings)
-            .onReceive(NotificationCenter.default.publisher(for: .settingsDidChange)) { _ in loadSettings() }
+            .onReceive(NotificationCenter.default.publisher(for: .settingsDidChange)) { _ in
+                loadSettings()
+            }
         }
     }
     

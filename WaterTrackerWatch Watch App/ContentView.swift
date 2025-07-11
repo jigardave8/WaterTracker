@@ -5,12 +5,12 @@
 //  Created by BitDegree on 08/07/25.
 //
 
-// watchOS ContentView.swift
 import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject var healthManager: HealthKitManager
-    @StateObject private var settingsManager = SettingsManager()
+    // Use the correct, watch-safe settings object.
+    @EnvironmentObject var watchSettings: WatchSettings
     @AppStorage("dailyGoal", store: UserDefaults(suiteName: SharedDataManager.appGroupID)) var dailyGoal: Double = 2500
 
     var progress: Double {
@@ -23,9 +23,10 @@ struct ContentView: View {
             HStack {
                 ProgressCircleView(progress: progress).frame(width: 50, height: 50)
                 VStack(alignment: .leading) {
-                    Text("\(Int(healthManager.totalWaterToday)) \(settingsManager.volumeUnit.rawValue)")
+                    // Use the property from the correct object.
+                    Text("\(Int(healthManager.totalWaterToday)) \(watchSettings.volumeUnit.rawValue)")
                         .font(.headline).bold()
-                    Text("of \(Int(dailyGoal)) \(settingsManager.volumeUnit.rawValue)")
+                    Text("of \(Int(dailyGoal)) \(watchSettings.volumeUnit.rawValue)")
                         .font(.caption).foregroundColor(.secondary)
                 }
             }.padding(.bottom, 4)

@@ -5,47 +5,86 @@
 //  Created by BitDegree on 10/07/25.
 //
 //
-//
 //  OnboardingView.swift
 //  WaterTracker
 //
-//  A complete onboarding flow with permissions and a final completion page.
+//  A dynamic onboarding flow with state changes for user feedback.
 //
 
 import SwiftUI
+import HealthKit
 
 struct OnboardingView: View {
     @Binding var isOnboarding: Bool
     
+    // State to track permission status for instant UI feedback.
+    @State private var healthAccessGranted = false
+    @State private var notificationAccessGranted = false
+    
+    init(isOnboarding: Binding<Bool>) {
+        self._isOnboarding = isOnboarding
+        // Check initial HealthKit status when the view is created
+        let waterType = HKQuantityType.quantityType(forIdentifier: .dietaryWater)!
+        let status = HKHealthStore().authorizationStatus(for: waterType)
+        if status == .sharingAuthorized {
+            // Use _property = State(initialValue:) to set state in an init
+            self._healthAccessGranted = State(initialValue: true)
+        }
+    }
+    
     var body: some View {
         TabView {
-            // Page 1: Welcome
             OnboardingPage(imageName: "drop.fill", title: "Welcome to WaterTracker", description: "Your simple, beautiful companion to stay hydrated and healthy.")
             
-            // Page 2: HealthKit Permission
-            OnboardingPage(imageName: "heart.text.square.fill", title: "Integrate with Health", description: "Securely save your data and sync across all your devices.", isPermissionPage: true, buttonText: "Allow Health Access") {
-                _ = HealthKitManager()
+            OnboardingPage(
+                imageName: "heart.text.square.fill",
+                title: "Integrate with Health",
+                description: "Securely save your data and sync across all your devices.",
+                isPermissionPage: true,
+                buttonText: healthAccessGranted ? "Access Granted" : "Allow Health Access",
+                isButtonDisabled: healthAccessGranted,
+                buttonIcon: healthAccessGranted ? "checkmark" : nil
+            ) {
+                let waterType = HKQuantityType.quantityType(forIdentifier: .dietaryWater)!
+                HKHealthStore().requestAuthorization(toShare: [waterType], read: [waterType]) { success, error in
+                    if success {
+                        DispatchQueue.main.async { self.healthAccessGranted = true }
+                    }
+                }
             }
             
-            // Page 3: Notification Permission
-            OnboardingPage(imageName: "bell.badge.fill", title: "Enable Reminders", description: "Let us help you stay on track with periodic notifications.", isPermissionPage: true, buttonText: "Enable Reminders") {
+            OnboardingPage(
+                imageName: "bell.badge.fill",
+                title: "Enable Reminders",
+                description: "Let us help you stay on track with periodic notifications.",
+                isPermissionPage: true,
+                buttonText: notificationAccessGranted ? "Reminders Enabled" : "Enable Reminders",
+                isButtonDisabled: notificationAccessGranted,
+                buttonIcon: notificationAccessGranted ? "checkmark" : nil
+            ) {
                 NotificationManager.shared.requestAuthorization { granted in
-                    // If granted, we can turn the reminders on by default.
                     if granted {
                         UserDefaults.standard.set(true, forKey: "remindersOn")
+                        self.notificationAccessGranted = true
                     }
                 }
             }
 
-            // Page 4: Smart Goal Setup
+            // --- The previously missing structs are now included ---
             OnboardingGoalSetupPage()
             
-            // Page 5: Completion
             OnboardingCompletionPage(isOnboarding: $isOnboarding)
         }
         .tabViewStyle(.page(indexDisplayMode: .always))
         .background(Color.appBackground)
         .ignoresSafeArea(.all)
+        .onAppear {
+            UNUserNotificationCenter.current().getNotificationSettings { settings in
+                if settings.authorizationStatus == .authorized {
+                    DispatchQueue.main.async { self.notificationAccessGranted = true }
+                }
+            }
+        }
     }
 }
 
@@ -56,6 +95,8 @@ struct OnboardingPage: View {
     let description: String
     var isPermissionPage: Bool = false
     var buttonText: String = "Continue"
+    var isButtonDisabled: Bool = false
+    var buttonIcon: String? = nil
     var permissionAction: (() -> Void)? = nil
     
     var body: some View {
@@ -67,12 +108,33 @@ struct OnboardingPage: View {
             
             if isPermissionPage {
                 Button(action: { permissionAction?() }) {
-                    Text(buttonText).fontWeight(.bold).padding().frame(maxWidth: .infinity).background(Color.accentGradient).foregroundColor(.white).cornerRadius(12)
-                }.padding(.top, 30)
+                    HStack {
+                        if let icon = buttonIcon { Image(systemName: icon) }
+                        Text(buttonText)
+                    }
+                    .fontWeight(.bold).padding().frame(maxWidth: .infinity)
+                    // --- THIS IS THE FIX for the color/gradient mismatch ---
+                    // We now return a ShapeStyle, which can be a Color or a Gradient.
+                    .background(backgroundStyle())
+                    .foregroundColor(.white).cornerRadius(12)
+                }
+                .disabled(isButtonDisabled)
+                .padding(.top, 30)
+                .animation(.default, value: isButtonDisabled)
             }
             Spacer()
             Spacer()
         }.padding(40)
+    }
+    
+    // Helper function to return the correct ShapeStyle, resolving the type mismatch.
+    @ViewBuilder
+    private func backgroundStyle() -> some View {
+        if isButtonDisabled {
+            Color.green
+        } else {
+            Color.accentGradient
+        }
     }
 }
 

@@ -9,18 +9,13 @@
 //  ReminderSettingsView.swift
 //  WaterTracker
 //
-//  This dedicated view encapsulates all UI and logic for the Reminders section,
-//  solving the compiler performance issues by isolating the complexity.
-//
 
 import SwiftUI
 
 struct ReminderSettingsView: View {
-    // This view receives the ViewModel and StoreManager from its parent (SettingsView).
     @ObservedObject var viewModel: SettingsViewModel
     @ObservedObject var storeManager: StoreManager
     
-    // The alert is now managed locally within this specific view.
     @State private var showingDisableAlert = false
     
     #if DEBUG
@@ -32,15 +27,20 @@ struct ReminderSettingsView: View {
     var body: some View {
         Section(header: Text("Reminders")) {
             Toggle("Enable Reminders", isOn: $viewModel.remindersOn)
-                .onChange(of: viewModel.remindersOn, perform: handleReminderToggle)
+                .onChange(of: viewModel.remindersOn) {
+                    handleReminderToggle(isNowEnabled: viewModel.remindersOn)
+                }
             
             if viewModel.remindersOn {
-                // The details are now cleanly contained here.
                 DatePicker("Start Time", selection: $viewModel.startTime, displayedComponents: .hourAndMinute)
-                    .onChange(of: viewModel.startTime) { _ in viewModel.handleReminderSettingsChange(isPro: storeManager.isProUser) }
+                    .onChange(of: viewModel.startTime) {
+                        viewModel.handleReminderSettingsChange(isPro: storeManager.isProUser)
+                    }
                 
                 DatePicker("End Time", selection: $viewModel.endTime, displayedComponents: .hourAndMinute)
-                    .onChange(of: viewModel.endTime) { _ in viewModel.handleReminderSettingsChange(isPro: storeManager.isProUser) }
+                    .onChange(of: viewModel.endTime) {
+                        viewModel.handleReminderSettingsChange(isPro: storeManager.isProUser)
+                    }
                 
                 Picker("Frequency", selection: $viewModel.interval) {
                     ForEach(intervals, id: \.self) { mins in
@@ -51,7 +51,9 @@ struct ReminderSettingsView: View {
                         }
                     }
                 }
-                .onChange(of: viewModel.interval) { _ in viewModel.handleReminderSettingsChange(isPro: storeManager.isProUser) }
+                .onChange(of: viewModel.interval) {
+                    viewModel.handleReminderSettingsChange(isPro: storeManager.isProUser)
+                }
                 
                 Picker("Notification Sound", selection: $viewModel.soundName) {
                     ForEach(NotificationSound.allSounds) { sound in
@@ -66,7 +68,9 @@ struct ReminderSettingsView: View {
                         .disabled(sound.isPro && !storeManager.isProUser)
                     }
                 }
-                .onChange(of: viewModel.soundName) { _ in viewModel.handleReminderSettingsChange(isPro: storeManager.isProUser) }
+                .onChange(of: viewModel.soundName) {
+                    viewModel.handleReminderSettingsChange(isPro: storeManager.isProUser)
+                }
             }
         }
         .alert("Disable Reminders?", isPresented: $showingDisableAlert, actions: {
@@ -75,7 +79,6 @@ struct ReminderSettingsView: View {
         }, message: { Text("Staying hydrated is key to your well-being. Are you sure you want to turn off reminders?") })
     }
     
-    // The toggle logic now lives here, close to the UI it controls.
     private func handleReminderToggle(isNowEnabled: Bool) {
         if isNowEnabled {
             NotificationManager.shared.requestAuthorization { granted in

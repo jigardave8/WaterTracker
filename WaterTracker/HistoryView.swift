@@ -9,16 +9,15 @@
 //  HistoryView.swift
 //  WaterTracker
 //
+//  Created by BitDegree on 08/07/25.
+//
 
 import SwiftUI
 import HealthKit
 
 struct HistoryView: View {
-    // --- THE FIX IS HERE ---
-    // Changed from @ObservedObject to @EnvironmentObject.
     @EnvironmentObject var healthManager: HealthKitManager
-    
-    @StateObject private var settingsManager = SettingsManager()
+    @EnvironmentObject var settingsViewModel: SettingsViewModel
     
     private var dateFormatter: DateFormatter {
         let formatter = DateFormatter()
@@ -41,7 +40,8 @@ struct HistoryView: View {
     
     @ViewBuilder
     private func historyRow(for sample: HKQuantitySample) -> some View {
-        let hydratedAmount = sample.quantity.doubleValue(for: settingsManager.volumeUnit.healthKitUnit)
+        let currentUnit = settingsViewModel.volumeUnit
+        let hydratedAmount = sample.quantity.doubleValue(for: currentUnit.healthKitUnit)
         
         let drinkName = sample.metadata?[HealthKitManager.MetadataKeys.drinkName] as? String ?? "Water"
         let originalVolumeML = sample.metadata?[HealthKitManager.MetadataKeys.originalVolume] as? Double
@@ -50,13 +50,13 @@ struct HistoryView: View {
             Image(systemName: "drop.fill").foregroundColor(.blue).font(.title2)
             VStack(alignment: .leading) {
                 if let originalVolumeML = originalVolumeML, drinkName != "Water" {
-                    let originalVolume = HKQuantity(unit: .literUnit(with: .milli), doubleValue: originalVolumeML).doubleValue(for: settingsManager.volumeUnit.healthKitUnit)
-                    Text("\(Int(originalVolume)) \(settingsManager.volumeUnit.rawValue) \(drinkName)")
+                    let originalVolume = HKQuantity(unit: .literUnit(with: .milli), doubleValue: originalVolumeML).doubleValue(for: currentUnit.healthKitUnit)
+                    Text("\(Int(originalVolume)) \(currentUnit.rawValue) \(drinkName)")
                         .fontWeight(.bold)
-                    Text("(\(Int(hydratedAmount)) \(settingsManager.volumeUnit.rawValue) Hydration)")
+                    Text("(\(Int(hydratedAmount)) \(currentUnit.rawValue) Hydration)")
                         .font(.caption).foregroundColor(.secondary)
                 } else {
-                    Text("\(Int(hydratedAmount)) \(settingsManager.volumeUnit.rawValue) Water")
+                    Text("\(Int(hydratedAmount)) \(currentUnit.rawValue) Water")
                         .fontWeight(.bold)
                 }
             }

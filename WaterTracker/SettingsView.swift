@@ -9,15 +9,15 @@
 //  SettingsView.swift
 //  WaterTracker
 //
-//  This is the final, stable version. Its body is composed of dedicated
-//  sub-views that exist in their own files. This guarantees compiler stability.
+//  Created by BitDegree on 08/07/25.
 //
 
 import SwiftUI
 import MessageUI
 
 struct SettingsView: View {
-    @StateObject private var viewModel = SettingsViewModel()
+    // Receives the shared SettingsViewModel from the environment.
+    @EnvironmentObject var viewModel: SettingsViewModel
     @EnvironmentObject var storeManager: StoreManager
     @Environment(\.presentationMode) var presentationMode
     
@@ -29,7 +29,6 @@ struct SettingsView: View {
     var body: some View {
         NavigationView {
             Form {
-                // Each complex section is now its own, isolated view from its own file.
                 GoalAndUnitsSettingsView(viewModel: viewModel, showingSuggestionSheet: $showingSuggestionSheet)
                 
                 PermissionsSettingsView()
@@ -65,8 +64,7 @@ struct SettingsView: View {
             MailView(result: self.$mailResult)
         }
     }
-    
-    // The check for system-level notification permissions remains here.
+
     private func checkSystemNotificationStatus() {
         UNUserNotificationCenter.current().getNotificationSettings { settings in
             DispatchQueue.main.async {
@@ -79,6 +77,3 @@ struct SettingsView: View {
         }
     }
 }
-
-// NOTE: ALL LOCAL STRUCT DEFINITIONS HAVE BEEN REMOVED FROM THIS FILE.
-// THEY NOW EXIST IN THEIR OWN DEDICATED FILES.

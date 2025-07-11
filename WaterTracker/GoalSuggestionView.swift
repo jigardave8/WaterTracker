@@ -4,13 +4,10 @@
 //
 //  Created by BitDegree on 09/07/25.
 //
-//
 //  GoalSuggestionView.swift
 //  WaterTracker
 //
-//  This view calculates a suggested goal and can be used in two contexts:
-//  1. From the Settings sheet (with a dismiss button).
-//  2. As part of the onboarding flow (with a completion handler).
+//  Created by BitDegree on 09/07/25.
 //
 
 import SwiftUI
@@ -19,19 +16,17 @@ import HealthKit
 struct GoalSuggestionView: View {
     @Binding var dailyGoal: Double
     @Environment(\.dismiss) var dismiss
-    @StateObject private var settingsManager = SettingsManager()
+    @EnvironmentObject var settingsViewModel: SettingsViewModel
     
     @State private var weightInKg: Double = 70.0
     @State private var activityLevel: ActivityLevel = .light
     
-    // Optional properties to adapt the view for the onboarding flow.
     var isFromOnboarding: Bool = false
     var onComplete: (() -> Void)? = nil
     
     var suggestedGoal: Double {
         let goalInML = GoalCalculator.suggestGoal(weightInKg: weightInKg, activityLevel: activityLevel)
-        // Convert the ML goal to the user's preferred unit for display
-        return HKQuantity(unit: .literUnit(with: .milli), doubleValue: goalInML).doubleValue(for: settingsManager.volumeUnit.healthKitUnit)
+        return HKQuantity(unit: .literUnit(with: .milli), doubleValue: goalInML).doubleValue(for: settingsViewModel.volumeUnit.healthKitUnit)
     }
     
     var body: some View {
@@ -48,7 +43,7 @@ struct GoalSuggestionView: View {
             
             Section(header: Text("Suggested Goal")) {
                 HStack {
-                    Text("\(Int(suggestedGoal)) \(settingsManager.volumeUnit.rawValue)")
+                    Text("\(Int(suggestedGoal)) \(settingsViewModel.volumeUnit.rawValue)")
                         .font(.title)
                         .fontWeight(.bold)
                     Spacer()
@@ -58,9 +53,9 @@ struct GoalSuggestionView: View {
             Button(action: {
                 dailyGoal = suggestedGoal
                 if isFromOnboarding {
-                    onComplete?() // Call the completion handler to dismiss onboarding
+                    onComplete?()
                 } else {
-                    dismiss() // Dismiss the sheet if opened from settings
+                    dismiss()
                 }
             }) {
                 HStack {
@@ -72,8 +67,6 @@ struct GoalSuggestionView: View {
             }.tint(.blue)
         }
         
-        // Conditionally wrap the content in a NavigationView or a simpler VStack
-        // depending on where it's being presented from.
         if isFromOnboarding {
             VStack {
                 Text("Set Your Daily Goal")

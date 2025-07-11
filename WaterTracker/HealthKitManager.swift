@@ -9,8 +9,7 @@
 //  HealthKitManager.swift
 //  WaterTracker
 //
-//  This is the central point for all HealthKit interactions. It now triggers
-//  the AwardsManager after a successful save.
+//  Created by BitDegree on 08/07/25.
 //
 
 import Foundation
@@ -19,7 +18,6 @@ import WidgetKit
 
 class HealthKitManager: ObservableObject {
     
-    // Define unique keys for our custom metadata.
     struct MetadataKeys {
         static let drinkName = "bitdegree.WaterTracker.drinkName"
         static let originalVolume = "bitdegree.WaterTracker.originalVolume"
@@ -31,9 +29,7 @@ class HealthKitManager: ObservableObject {
     @Published var history: [HKQuantitySample] = []
     @Published var weeklyIntakeData: [DailyIntake] = []
     
-    // Add a reference to the awards manager so we can trigger checks.
     var awardsManager: AwardsManager?
-    private var settingsManager = SettingsManager()
 
     init() {
         guard HKHealthStore.isHealthDataAvailable() else {
@@ -88,8 +84,6 @@ class HealthKitManager: ObservableObject {
                 HapticManager.shared.simpleSuccess()
                 DispatchQueue.main.async {
                     self.fetchAllTodayData()
-                    
-                    // NEW: Check for awards after updating data.
                     self.awardsManager?.checkAwards(afterLogging: drink, healthManager: self)
                 }
             } else if let error = error {
@@ -112,7 +106,9 @@ class HealthKitManager: ObservableObject {
                 return
             }
             DispatchQueue.main.async {
-                self.totalWaterToday = sum.doubleValue(for: self.settingsManager.volumeUnit.healthKitUnit)
+                // Read the current unit directly from the single source of truth.
+                let currentUnit = CloudSettingsManager.shared.getVolumeUnit().healthKitUnit
+                self.totalWaterToday = sum.doubleValue(for: currentUnit)
                 completion?()
             }
         }
@@ -162,8 +158,10 @@ class HealthKitManager: ObservableObject {
         query.initialResultsHandler = { query, result, error in
             guard let result = result else { return }
             var dailyData: [DailyIntake] = []
+            let currentUnit = CloudSettingsManager.shared.getVolumeUnit().healthKitUnit
             result.enumerateStatistics(from: startDate, to: today) { statistics, stop in
-                let intakeForDay = statistics.sumQuantity()?.doubleValue(for: self.settingsManager.volumeUnit.healthKitUnit) ?? 0
+                // Read the current unit directly from the single source of truth.
+                let intakeForDay = statistics.sumQuantity()?.doubleValue(for: currentUnit) ?? 0
                 dailyData.append(DailyIntake(date: statistics.startDate, intake: intakeForDay))
             }
             DispatchQueue.main.async { self.weeklyIntakeData = dailyData }

@@ -9,8 +9,7 @@
 //  ChartsView.swift
 //  WaterTracker
 //
-//  This view displays the user's intake over the last 7 days in an
-//  interactive bar chart, respecting the user's unit preference.
+//  Created by BitDegree on 09/07/25.
 //
 
 import SwiftUI
@@ -18,12 +17,10 @@ import Charts
 
 struct ChartsView: View {
     @ObservedObject var healthManager: HealthKitManager
-    @StateObject private var settingsManager = SettingsManager()
+    @EnvironmentObject var settingsViewModel: SettingsViewModel
     
-    // State for the interactive chart "scrubber".
     @State private var selectedDate: Date?
     
-    // Computed property to find the data for the selected date.
     var selectedIntake: DailyIntake? {
         guard let selectedDate = selectedDate else { return nil }
         return healthManager.weeklyIntakeData.first {
@@ -46,18 +43,16 @@ struct ChartsView: View {
                     .cornerRadius(6)
                 }
                 
-                // RuleMark to show the scrubber line when interacting.
                 if let selectedIntake = selectedIntake {
                     RuleMark(x: .value("Selected", selectedIntake.date, unit: .day))
                         .foregroundStyle(.gray.opacity(0.5))
                         .offset(y: -10)
                         .zIndex(-1)
                         .annotation(position: .top, alignment: .center, spacing: 8) {
-                            // Annotation view showing the value.
                             VStack(spacing: 2) {
                                 Text(selectedIntake.date, format: .dateTime.month().day())
                                     .font(.caption).foregroundColor(.secondary)
-                                Text("\(Int(selectedIntake.intake)) \(settingsManager.volumeUnit.rawValue)")
+                                Text("\(Int(selectedIntake.intake)) \(settingsViewModel.volumeUnit.rawValue)")
                                     .font(.headline).fontWeight(.bold)
                             }
                             .padding(8)
@@ -81,13 +76,11 @@ struct ChartsView: View {
                     AxisGridLine(); AxisTick()
                     if let ml = value.as(Double.self) {
                         AxisValueLabel {
-                            // Display the correct unit on the Y-axis.
-                            Text("\(Int(ml)) \(settingsManager.volumeUnit.rawValue)")
+                            Text("\(Int(ml)) \(settingsViewModel.volumeUnit.rawValue)")
                         }
                     }
                 }
             }
-            // Gesture to capture tap/drag for interactivity.
             .chartOverlay { proxy in
                 GeometryReader { geometry in
                     Rectangle().fill(.clear).contentShape(Rectangle())
@@ -109,11 +102,5 @@ struct ChartsView: View {
         .onAppear {
             healthManager.fetchWeeklyIntake()
         }
-    }
-}
-
-struct ChartsView_Previews: PreviewProvider {
-    static var previews: some View {
-        ChartsView(healthManager: HealthKitManager())
     }
 }

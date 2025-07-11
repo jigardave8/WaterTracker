@@ -4,15 +4,6 @@
 //
 //  Created by BitDegree on 10/07/25.
 //
-//
-//
-//
-//  SettingsViewModel.swift
-//  WaterTracker
-//
-//  This is the definitive, stable version of the ViewModel. It separates state loading
-//  from side-effects (like scheduling notifications) to prevent crashes.
-//
 
 import SwiftUI
 import Combine
@@ -21,9 +12,8 @@ class SettingsViewModel: ObservableObject {
     // MARK: - Published Properties
     
     @Published var dailyGoal: Double
-    @Published var volumeUnit: VolumeUnit
+    @Published var volumeUnit: VolumeUnit // This will now correctly reference the global type
     
-    // The didSet blocks now ONLY save to UserDefaults. No more side-effects here.
     @Published var remindersOn: Bool {
         didSet { UserDefaults.standard.set(remindersOn, forKey: "remindersOn") }
     }
@@ -41,7 +31,10 @@ class SettingsViewModel: ObservableObject {
     }
     
     @Published var selectedAppIcon: AppIcon {
-        didSet { UIApplication.shared.setAlternateIconName(selectedAppIcon.iconName) }
+        didSet {
+            // This is iOS-specific code and is safe here.
+            UIApplication.shared.setAlternateIconName(selectedAppIcon.iconName)
+        }
     }
     
     @Published var soundName: String {
@@ -53,8 +46,6 @@ class SettingsViewModel: ObservableObject {
     // MARK: - Initialization
     
     init() {
-        // Initialize properties with default values BEFORE loading from storage.
-        // This ensures the object is in a valid state from the very beginning.
         self.dailyGoal = 2500
         self.volumeUnit = .milliliters
         self.remindersOn = false
@@ -86,7 +77,6 @@ class SettingsViewModel: ObservableObject {
         self.dailyGoal = goal
     }
     
-    // This is the single, safe entry point for scheduling. It's called explicitly by the view.
     func handleReminderSettingsChange(isPro: Bool) {
         NotificationManager.shared.scheduleAdvancedReminders(
             isPro: isPro,
@@ -105,7 +95,6 @@ class SettingsViewModel: ObservableObject {
         volumeUnit = CloudSettingsManager.shared.getVolumeUnit()
         remindersOn = UserDefaults.standard.bool(forKey: "remindersOn")
         
-        // Safely create default dates and use nil-coalescing (`??`) to prevent crashes.
         let defaultStartTime = Calendar.current.date(from: DateComponents(hour: 8)) ?? Date()
         let savedStartTime = UserDefaults.standard.double(forKey: "reminderStartTime")
         startTime = savedStartTime > 0 ? Date(timeIntervalSince1970: savedStartTime) : defaultStartTime
