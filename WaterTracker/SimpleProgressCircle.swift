@@ -1,40 +1,33 @@
 //
-//  ProgressCircleView.swift
+//  SimpleProgressCircle.swift
 //  WaterTracker
 //
-//  Created by BitDegree on 08/07/25.
+//  Created by BitDegree on 11/07/25.
 //
-
-// ProgressCircleView.swift
-// Make sure this file is a member of both the iOS and watchOS targets.
+//  A simple, shared progress circle for the watchOS and Widget targets.
+//
 
 import SwiftUI
 
-struct ProgressCircleView: View {
+struct SimpleProgressCircle: View {
     let progress: Double
+    let lineWidth: CGFloat
     
     var body: some View {
         ZStack {
             // Background circle
             Circle()
-                .stroke(lineWidth: 20)
+                .stroke(lineWidth: lineWidth)
                 .opacity(0.3)
                 .foregroundColor(.blue)
             
             // Progress circle
             Circle()
                 .trim(from: 0.0, to: min(progress, 1.0))
-                .stroke(style: StrokeStyle(lineWidth: 20, lineCap: .round, lineJoin: .round))
+                .stroke(style: StrokeStyle(lineWidth: lineWidth, lineCap: .round, lineJoin: .round))
                 .foregroundColor(.blue)
                 .rotationEffect(Angle(degrees: 270.0)) // Start from the top
                 .animation(.linear, value: progress)
         }
-    }
-}
-
-struct ProgressCircleView_Previews: PreviewProvider {
-    static var previews: some View {
-        ProgressCircleView(progress: 0.65)
-            .padding(40)
     }
 }

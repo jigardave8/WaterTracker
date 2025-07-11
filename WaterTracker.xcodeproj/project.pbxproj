@@ -76,8 +76,8 @@
 				Drink.swift,
 				HapticManager.swift,
 				HealthKitManager.swift,
-				ProgressCircleView.swift,
 				SharedDataManager.swift,
+				SimpleProgressCircle.swift,
 				VolumeUnit.swift,
 				"Water Track Dark.jpg",
 			);
@@ -93,8 +93,8 @@
 		E14419632E1DA36600D1BCF0 /* Exceptions for "WaterTracker" folder in "WaterWidgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				ProgressCircleView.swift,
 				SharedDataManager.swift,
+				SimpleProgressCircle.swift,
 				VolumeUnit.swift,
 				"Water Track Dark.jpg",
 			);
@@ -493,6 +493,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "We need to read your health data to track your daily water intake and sync across your devices";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "We need to update your health data to save your water intake.";
+				INFOPLIST_KEY_NSMotionUsageDescription = "This allows the water animation to respond to your movements";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -536,6 +537,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "We need to read your health data to track your daily water intake and sync across your devices";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "We need to update your health data to save your water intake.";
+				INFOPLIST_KEY_NSMotionUsageDescription = "This allows the water animation to respond to your movements";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;

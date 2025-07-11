@@ -4,12 +4,6 @@
 //
 //  Created by BitDegree on 10/07/25.
 //
-//
-//  OnboardingView.swift
-//  WaterTracker
-//
-//  A dynamic onboarding flow with state changes for user feedback.
-//
 
 import SwiftUI
 import HealthKit
@@ -17,41 +11,35 @@ import HealthKit
 struct OnboardingView: View {
     @Binding var isOnboarding: Bool
     
-    // State to track permission status for instant UI feedback.
     @State private var healthAccessGranted = false
     @State private var notificationAccessGranted = false
+    @State private var showHealthDeniedAlert = false
+    @State private var showNotificationDeniedAlert = false
+    @State private var isGoalSet = false
     
     init(isOnboarding: Binding<Bool>) {
         self._isOnboarding = isOnboarding
-        // Check initial HealthKit status when the view is created
         let waterType = HKQuantityType.quantityType(forIdentifier: .dietaryWater)!
         let status = HKHealthStore().authorizationStatus(for: waterType)
         if status == .sharingAuthorized {
-            // Use _property = State(initialValue:) to set state in an init
             self._healthAccessGranted = State(initialValue: true)
         }
     }
     
     var body: some View {
         TabView {
-            OnboardingPage(imageName: "drop.fill", title: "Welcome to WaterTracker", description: "Your simple, beautiful companion to stay hydrated and healthy.")
+            OnboardingPage(imageName: "drop.fill", title: "Welcome to WaterTracker", description: "Your companion to stay hydrated and healthy.")
             
             OnboardingPage(
                 imageName: "heart.text.square.fill",
                 title: "Integrate with Health",
-                description: "Securely save your data and sync across all your devices.",
+                description: "Securely save your data and sync across devices.",
                 isPermissionPage: true,
                 buttonText: healthAccessGranted ? "Access Granted" : "Allow Health Access",
                 isButtonDisabled: healthAccessGranted,
                 buttonIcon: healthAccessGranted ? "checkmark" : nil
-            ) {
-                let waterType = HKQuantityType.quantityType(forIdentifier: .dietaryWater)!
-                HKHealthStore().requestAuthorization(toShare: [waterType], read: [waterType]) { success, error in
-                    if success {
-                        DispatchQueue.main.async { self.healthAccessGranted = true }
-                    }
-                }
-            }
+            )
+            .onAppear(perform: requestHealthPermission)
             
             OnboardingPage(
                 imageName: "bell.badge.fill",
@@ -61,34 +49,68 @@ struct OnboardingView: View {
                 buttonText: notificationAccessGranted ? "Reminders Enabled" : "Enable Reminders",
                 isButtonDisabled: notificationAccessGranted,
                 buttonIcon: notificationAccessGranted ? "checkmark" : nil
-            ) {
-                NotificationManager.shared.requestAuthorization { granted in
-                    if granted {
-                        UserDefaults.standard.set(true, forKey: "remindersOn")
-                        self.notificationAccessGranted = true
-                    }
-                }
-            }
+            )
+            .onAppear(perform: requestNotificationPermission)
 
-            // --- The previously missing structs are now included ---
-            OnboardingGoalSetupPage()
+            OnboardingGoalSetupPage(isGoalSet: $isGoalSet)
             
             OnboardingCompletionPage(isOnboarding: $isOnboarding)
         }
         .tabViewStyle(.page(indexDisplayMode: .always))
-        .background(Color.appBackground)
-        .ignoresSafeArea(.all)
-        .onAppear {
-            UNUserNotificationCenter.current().getNotificationSettings { settings in
-                if settings.authorizationStatus == .authorized {
-                    DispatchQueue.main.async { self.notificationAccessGranted = true }
+        .background(Color.appBackground.ignoresSafeArea())
+        .alert("Health Access Required", isPresented: $showHealthDeniedAlert) {
+            Button("Go to Settings") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("To save and track your water intake, WaterTracker needs permission to access Health data. Please enable it in Settings.")
+        }
+        .alert("Enable Notifications?", isPresented: $showNotificationDeniedAlert) {
+            Button("Go to Settings") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
+            Button("Maybe Later", role: .cancel) {}
+        } message: {
+            Text("To send helpful reminders, WaterTracker needs permission to send notifications. You can enable this in Settings.")
+        }
+    }
+    
+    private func requestHealthPermission() {
+        guard !healthAccessGranted else { return }
+        let waterType = HKQuantityType.quantityType(forIdentifier: .dietaryWater)!
+        HKHealthStore().requestAuthorization(toShare: [waterType], read: [waterType]) { success, error in
+            DispatchQueue.main.async {
+                if success {
+                    self.healthAccessGranted = true
+                } else {
+                    self.showHealthDeniedAlert = true
+                }
+            }
+        }
+    }
+    
+    private func requestNotificationPermission() {
+        guard !notificationAccessGranted else { return }
+        NotificationManager.shared.requestAuthorization { granted in
+            DispatchQueue.main.async {
+                if granted {
+                    UserDefaults.standard.set(true, forKey: "remindersOn")
+                    self.notificationAccessGranted = true
+                } else {
+                    self.showNotificationDeniedAlert = true
                 }
             }
         }
     }
 }
 
-// Reusable Onboarding Page View
+// --- ONBOARDING PAGE SUB-VIEWS ---
+
 struct OnboardingPage: View {
     let imageName: String
     let title: String
@@ -97,7 +119,6 @@ struct OnboardingPage: View {
     var buttonText: String = "Continue"
     var isButtonDisabled: Bool = false
     var buttonIcon: String? = nil
-    var permissionAction: (() -> Void)? = nil
     
     var body: some View {
         VStack(spacing: 20) {
@@ -107,18 +128,18 @@ struct OnboardingPage: View {
             Text(description).font(.headline).multilineTextAlignment(.center).foregroundColor(.secondary)
             
             if isPermissionPage {
-                Button(action: { permissionAction?() }) {
+                Button(action: {}) {
                     HStack {
                         if let icon = buttonIcon { Image(systemName: icon) }
                         Text(buttonText)
                     }
                     .fontWeight(.bold).padding().frame(maxWidth: .infinity)
-                    // --- THIS IS THE FIX for the color/gradient mismatch ---
-                    // We now return a ShapeStyle, which can be a Color or a Gradient.
-                    .background(backgroundStyle())
+                    // --- THIS IS THE FIX ---
+                    // The .background modifier now calls a helper function that returns a View.
+                    .background(buttonBackgroundStyle())
                     .foregroundColor(.white).cornerRadius(12)
                 }
-                .disabled(isButtonDisabled)
+                .disabled(true)
                 .padding(.top, 30)
                 .animation(.default, value: isButtonDisabled)
             }
@@ -127,9 +148,10 @@ struct OnboardingPage: View {
         }.padding(40)
     }
     
-    // Helper function to return the correct ShapeStyle, resolving the type mismatch.
+    // This helper function uses @ViewBuilder to return the correct background style,
+    // resolving the type mismatch error.
     @ViewBuilder
-    private func backgroundStyle() -> some View {
+    private func buttonBackgroundStyle() -> some View {
         if isButtonDisabled {
             Color.green
         } else {
@@ -138,17 +160,22 @@ struct OnboardingPage: View {
     }
 }
 
-// Wrapper for Goal Suggestion page in onboarding
 struct OnboardingGoalSetupPage: View {
+    @Binding var isGoalSet: Bool
     @State private var tempGoal: Double = 2500
+
     var body: some View {
-        GoalSuggestionView(dailyGoal: $tempGoal, isFromOnboarding: true) {
+        GoalSuggestionView(
+            dailyGoal: $tempGoal,
+            isFromOnboarding: true,
+            isCompleted: $isGoalSet
+        ) {
             CloudSettingsManager.shared.setDailyGoal(tempGoal)
+            isGoalSet = true
         }
     }
 }
 
-// Final "You're All Set!" page
 struct OnboardingCompletionPage: View {
     @Binding var isOnboarding: Bool
     var body: some View {

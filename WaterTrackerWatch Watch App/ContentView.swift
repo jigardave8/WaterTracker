@@ -9,7 +9,6 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject var healthManager: HealthKitManager
-    // Use the correct, watch-safe settings object.
     @EnvironmentObject var watchSettings: WatchSettings
     @AppStorage("dailyGoal", store: UserDefaults(suiteName: SharedDataManager.appGroupID)) var dailyGoal: Double = 2500
 
@@ -21,9 +20,12 @@ struct ContentView: View {
     var body: some View {
         VStack {
             HStack {
-                ProgressCircleView(progress: progress).frame(width: 50, height: 50)
+                // --- THIS IS THE FIX ---
+                // Use the new SimpleProgressCircle and specify a line width.
+                SimpleProgressCircle(progress: progress, lineWidth: 8)
+                    .frame(width: 50, height: 50)
+                
                 VStack(alignment: .leading) {
-                    // Use the property from the correct object.
                     Text("\(Int(healthManager.totalWaterToday)) \(watchSettings.volumeUnit.rawValue)")
                         .font(.headline).bold()
                     Text("of \(Int(dailyGoal)) \(watchSettings.volumeUnit.rawValue)")
